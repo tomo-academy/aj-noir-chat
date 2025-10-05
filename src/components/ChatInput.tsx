@@ -3,9 +3,9 @@ import { Mic, Paperclip, Send, Image, X, File, Wind, Bot, Smile, StopCircle } fr
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { AnimatePresence, motion } from "framer-motion"; // Added for animations
-import EmojiPicker from 'emoji-picker-react'; // Added for emoji picker
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Added for tooltips
+import { AnimatePresence, motion } from "framer-motion";
+import EmojiPicker from 'emoji-picker-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 interface ChatInputProps {
   onSendMessage: (message: string, attachments?: File[], mode?: string) => void;
@@ -36,7 +36,6 @@ const ChatInput = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -67,7 +66,6 @@ const ChatInput = ({
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
-    // Add voice recording logic here (e.g., Web Speech API)
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,8 +108,6 @@ const ChatInput = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-black z-50">
       <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4">
-
-        {/* Attachments Preview with animations */}
         <AnimatePresence>
           {attachments.length > 0 && (
             <motion.div 
@@ -143,7 +139,6 @@ const ChatInput = ({
           )}
         </AnimatePresence>
 
-        {/* Main Input Area */}
         <div
           className={`relative transition-all ${dragActive ? "ring-2 ring-blue-500 rounded-2xl" : ""}`}
           onDragEnter={handleDrag}
@@ -152,8 +147,6 @@ const ChatInput = ({
           onDrop={handleDrop}
         >
           <div className="relative flex items-end gap-2 sm:gap-3 bg-gray-900 rounded-2xl border border-gray-800 focus-within:border-gray-700 transition-all p-2">
-            
-            {/* Left Controls - Attachment and Emoji */}
             <div className="flex items-center gap-1">
               <Popover open={showAttachMenu} onOpenChange={setShowAttachMenu}>
                 <PopoverTrigger asChild>
@@ -215,7 +208,6 @@ const ChatInput = ({
               rows={1}
             />
 
-            {/* Right Controls - Send/Mic/Stop Button */}
             <div className="absolute right-2 bottom-2 flex items-center gap-2">
               {isGenerating ? (
                 <Button
@@ -252,7 +244,6 @@ const ChatInput = ({
           </div>
         </div>
 
-        {/* Emoji Picker */}
         <AnimatePresence>
           {showEmojiPicker && (
             <motion.div 
@@ -266,7 +257,6 @@ const ChatInput = ({
           )}
         </AnimatePresence>
 
-        {/* AI Mode Selector and Footer */}
         <div className="mt-2 flex items-center justify-center text-xs text-gray-500">
           <div className="flex items-center gap-1 rounded-full bg-gray-900 border border-gray-800 p-1">
             {modes.map((mode) => (
