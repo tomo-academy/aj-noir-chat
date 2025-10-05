@@ -3,9 +3,9 @@ import { Sparkles, Search, Plus, Edit, History, Settings, HelpCircle, ChevronLef
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion"; // Added for animations
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"; // Added for drag-and-drop reordering
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"; // Added for tooltips
+import { AnimatePresence, motion } from "framer-motion";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 interface ChatItem {
   id: string;
@@ -25,7 +25,7 @@ interface SidebarProps {
   onRenameChat?: (chatId: string, newTitle: string) => void;
   onPinChat?: (chatId: string, isPinned: boolean) => void;
   onArchiveChat?: (chatId: string, isArchived: boolean) => void;
-  onReorderChats?: (newOrder: ChatItem[]) => void; // New prop for reordering
+  onReorderChats?: (newOrder: ChatItem[]) => void;
   currentChatId?: string;
 }
 
@@ -50,7 +50,6 @@ const Sidebar = ({
   const [showArchived, setShowArchived] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // Load chat history from localStorage on mount
   useEffect(() => {
     const savedChatHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedChatHistory) {
@@ -61,7 +60,6 @@ const Sidebar = ({
         console.error("Failed to parse chat history from localStorage", error);
       }
     } else {
-      // Initialize with sample data if no saved data exists
       const sampleData: ChatItem[] = [
         { id: "1", title: "Explore the universe with Grok", date: "Today", timestamp: Date.now(), messagesCount: 8, isPinned: true },
         { id: "2", title: "AI's role in cosmic discovery", date: "Yesterday", timestamp: Date.now() - 86400000, messagesCount: 12, category: "Science" },
@@ -75,12 +73,10 @@ const Sidebar = ({
     }
   }, []);
 
-  // Save chat history to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(chatHistory));
   }, [chatHistory]);
 
-  // Get unique categories from chat history
   const categories = useMemo(() => 
     Array.from(new Set(chatHistory.map(chat => chat.category).filter(Boolean) as string[])),
     [chatHistory]
@@ -137,13 +133,11 @@ const Sidebar = ({
 
   const handleCreateNewChat = () => {
     onNewChat();
-    // Auto-collapse sidebar on mobile after creating new chat
     if (window.innerWidth < 768) {
       setIsExpanded(false);
     }
   };
 
-  // Filter chats based on search query, archived status, and active category
   const filteredChats = useMemo(() => chatHistory.filter(chat => {
     const matchesSearch = chat.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesArchived = showArchived ? chat.isArchived : !chat.isArchived;
@@ -151,14 +145,12 @@ const Sidebar = ({
     return matchesSearch && matchesArchived && matchesCategory;
   }), [chatHistory, searchQuery, showArchived, activeCategory]);
 
-  // Sort chats: pinned first, then by timestamp (newest first)
   const sortedChats = useMemo(() => [...filteredChats].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1;
     if (!a.isPinned && b.isPinned) return 1;
     return b.timestamp - a.timestamp;
   }), [filteredChats]);
 
-  // Group chats by date (Today, Yesterday, This Week, Older)
   const groupedChats = useMemo(() => sortedChats.reduce((groups, chat) => {
     const now = Date.now();
     const chatDate = new Date(chat.timestamp);
@@ -184,7 +176,6 @@ const Sidebar = ({
     return groups;
   }, {} as Record<string, ChatItem[]>), [sortedChats]);
 
-  // Handle drag end for reordering
   const onDragEnd = (result: any) => {
     if (!result.destination) return;
     const newChats = Array.from(sortedChats);
@@ -204,7 +195,6 @@ const Sidebar = ({
           "bg-black border-r border-gray-900 flex flex-col transition-all duration-300 overflow-hidden h-full"
         )}
       >
-        {/* Logo and toggle */}
         <div className="flex items-center justify-between p-3 border-b border-gray-900">
           {isExpanded ? (
             <div className="flex items-center gap-2">
@@ -233,7 +223,6 @@ const Sidebar = ({
           </Button>
         </div>
 
-        {/* New Chat button */}
         <div className="p-2">
           <Button
             onClick={handleCreateNewChat}
@@ -247,7 +236,6 @@ const Sidebar = ({
           </Button>
         </div>
 
-        {/* Search and chat history */}
         {isExpanded && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <div className="px-3 pb-2">
@@ -262,7 +250,6 @@ const Sidebar = ({
               </div>
             </div>
 
-            {/* Category filter with scroll animation */}
             {categories.length > 0 && (
               <div className="px-3 pb-2">
                 <motion.div 
@@ -300,7 +287,6 @@ const Sidebar = ({
               </div>
             )}
 
-            {/* Toggle archived */}
             <div className="px-3 pb-2">
               <Button
                 variant="ghost"
@@ -499,7 +485,6 @@ const Sidebar = ({
           </motion.div>
         )}
 
-        {/* Bottom buttons */}
         <div className="mt-auto p-2 border-t border-gray-900">
           {isExpanded ? (
             <div className="space-y-1">
