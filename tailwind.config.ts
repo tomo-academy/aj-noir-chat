@@ -47,16 +47,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        chat: {
+          'bubble-user': "hsl(var(--chat-bubble-user))",
+          'bubble-user-foreground': "hsl(var(--chat-bubble-user-foreground))",
+          'bubble-ai': "hsl(var(--chat-bubble-ai))",
+          'bubble-ai-foreground': "hsl(var(--chat-bubble-ai-foreground))",
+          'input-bg': "hsl(var(--chat-input-bg))",
+          'header-bg': "hsl(var(--chat-header-bg))",
         },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       borderRadius: {
         lg: "var(--radius)",
