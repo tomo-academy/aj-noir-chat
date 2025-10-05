@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
           },
         },
       },
-    ),
+    }), // Properly closed the react plugin configuration
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
