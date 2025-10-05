@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-import { User, Sparkles, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from "lucide-react";
+import { memo, useState, lazy, Suspense } from "react";
+import { User, Sparkles, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw, Share2, Bookmark } from "lucide-react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
@@ -8,6 +8,11 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { motion } from "framer-motion"; // Added for animations
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"; // Added for share modal
+
+// Lazy load image for better performance
+const LazyImage = lazy(() => import('./LazyImage')); // Assume a LazyImage component exists
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -17,6 +22,8 @@ interface ChatMessageProps {
   onRefresh?: () => void;
   onThumbsUp?: () => void;
   onThumbsDown?: () => void;
+  onShare?: (content: string) => void; // New
+  onBookmark?: () => void; // New
 }
 
 const ChatMessage = memo(({ 
@@ -26,12 +33,15 @@ const ChatMessage = memo(({
   onCopy,
   onRefresh,
   onThumbsUp,
-  onThumbsDown 
+  onThumbsDown,
+  onShare,
+  onBookmark
 }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -54,7 +64,16 @@ const ChatMessage = memo(({
     }
   };
 
-  // Custom components for markdown rendering
+  const handleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    if (onBookmark) onBookmark();
+  };
+
+  const handleShare = () => {
+    if (onShare) onShare(content);
+  };
+
+  // Custom components for markdown rendering with image lazy loading
   const components = {
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
@@ -142,10 +161,22 @@ const ChatMessage = memo(({
         </a>
       );
     },
+    img({ src, alt }: any) {
+      return (
+        <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse" />}>
+          <LazyImage src={src} alt={alt} className="max-w-full rounded-lg my-4" />
+        </Suspense>
+      );
+    },
   };
 
   return (
-    <div className={`w-full py-6 px-4 ${isUser ? 'bg-background' : 'bg-muted/20'}`}>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`w-full py-6 px-4 ${isUser ? 'bg-background' : 'bg-muted/20'}`}
+    >
       <div className="max-w-3xl mx-auto">
         <div className="flex gap-4">
           {/* Avatar */}
@@ -206,7 +237,11 @@ const ChatMessage = memo(({
                           disabled={isRefreshing}
                         >
                           {isRefreshing ? (
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <motion.div 
+                              className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            />
                           ) : (
                             <RefreshCw className="h-4 w-4" />
                           )}
@@ -242,6 +277,42 @@ const ChatMessage = memo(({
                       </TooltipTrigger>
                       <TooltipContent side="top">Bad response</TooltipContent>
                     </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 rounded-full opacity-70 hover:opacity-100"
+                          onClick={handleBookmark}
+                        >
+                          <Bookmark className={cn("h-4 w-4", isBookmarked && "fill-current")} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{isBookmarked ? "Unbookmark" : "Bookmark"}</TooltipContent>
+                    </Tooltip>
+
+                    <Dialog>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DialogTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 rounded-full opacity-70 hover:opacity-100"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Share</TooltipContent>
+                      </Tooltip>
+                      <DialogContent>
+                        {/* Share modal content, e.g., links, social buttons */}
+                        <div>Share this message: {content.substring(0, 50)}...</div>
+                        <Button onClick={handleShare}>Share Now</Button>
+                      </DialogContent>
+                    </Dialog>
                   </TooltipProvider>
                 </div>
               )}
@@ -249,7 +320,7 @@ const ChatMessage = memo(({
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 
