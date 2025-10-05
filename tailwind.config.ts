@@ -47,18 +47,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        chat: {
-          'bubble-user': "hsl(var(--chat-bubble-user))",
-          'bubble-user-foreground': "hsl(var(--chat-bubble-user-foreground))",
-          'bubble-ai': "hsl(var(--chat-bubble-ai))",
-          'bubble-ai-foreground': "hsl(var(--chat-bubble-ai-foreground))",
-          'input-bg': "hsl(var(--chat-input-bg))",
-          'header-bg': "hsl(var(--chat-header-bg))",
-        },
+        sidebar: "hsl(var(--sidebar))",
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
       },
       borderRadius: {
         lg: "var(--radius)",
