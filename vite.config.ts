@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     hmr: {
-      overlay: true, // Show error overlay in browser
+      overlay: true,
     },
   },
   plugins: [
@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
           },
         },
       },
-    }), // Properly closed the react plugin configuration
+    }),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
   resolve: {
@@ -43,9 +43,9 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          "vendor": ["react", "react-dom"],
+          vendor: ["react", "react-dom"],
           "ui-libs": ["framer-motion", "react-beautiful-dnd", "emoji-picker-react"],
-          "markdown": ["react-markdown", "rehype-highlight", "rehype-raw", "remark-gfm"],
+          markdown: ["react-markdown", "rehype-highlight", "rehype-raw", "remark-gfm"],
         },
       },
     },
@@ -56,7 +56,9 @@ export default defineConfig(({ mode }) => ({
   css: {
     postcss: {
       plugins: [
-        tailwindcss(path.resolve(__dirname, "tailwind.config.js")),
+        tailwindcss({
+          config: path.resolve(__dirname, "tailwind.config.ts"),
+        }),
         autoprefixer(),
       ],
     },
