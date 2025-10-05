@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Sparkles, Search, Plus, Edit, History, Settings, HelpCircle, ChevronLeft, ChevronRight, Trash2, X, Archive, Clock, Star, FolderOpen, Zap, GripVertical } from "lucide-react";
+import { Sparkles, Search, Plus, Edit, History, Settings, HelpCircle, ChevronLeft, ChevronRight, Trash2, X, Archive, Clock, Star, FolderOpen, Zap, GripVertical, Check } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import SettingsModal from "./SettingsModal";
 
 interface ChatItem {
   id: string;
@@ -27,6 +28,9 @@ interface SidebarProps {
   onArchiveChat?: (chatId: string, isArchived: boolean) => void;
   onReorderChats?: (newOrder: ChatItem[]) => void;
   currentChatId?: string;
+  expanded?: boolean;
+  onToggleExpanded?: () => void;
+  onOpenSettings?: () => void;
 }
 
 const LOCAL_STORAGE_KEY = "grok-chat-history";
@@ -39,9 +43,12 @@ const Sidebar = ({
   onPinChat,
   onArchiveChat,
   onReorderChats,
-  currentChatId
+  currentChatId,
+  expanded = true,
+  onToggleExpanded,
+  onOpenSettings
 }: SidebarProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(expanded);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -49,6 +56,7 @@ const Sidebar = ({
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const savedChatHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -82,7 +90,17 @@ const Sidebar = ({
     [chatHistory]
   );
 
-  const toggleSidebar = () => setIsExpanded(!isExpanded);
+  useEffect(() => {
+    setIsExpanded(expanded);
+  }, [expanded]);
+
+  const toggleSidebar = () => {
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    if (onToggleExpanded) {
+      onToggleExpanded();
+    }
+  };
 
   const handleEditChat = (chat: ChatItem) => {
     setEditingChatId(chat.id);
@@ -188,28 +206,37 @@ const Sidebar = ({
   return (
     <AnimatePresence>
       <motion.aside
-        initial={{ width: isExpanded ? 288 : 56 }}
-        animate={{ width: isExpanded ? 288 : 56 }}
+        initial={{ width: isExpanded ? 320 : 60 }}
+        animate={{ width: isExpanded ? 320 : 60 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "bg-black border-r border-gray-900 flex flex-col transition-all duration-300 overflow-hidden h-full"
+          "bg-black/95 backdrop-blur-sm border-r border-gray-800 flex flex-col transition-all duration-300 overflow-hidden h-full"
         )}
       >
-        <div className="flex items-center justify-between p-3 border-b border-gray-900">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900/20">
           {isExpanded ? (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-black border border-gray-800">
-                <Sparkles className="w-5 h-5 text-white" />
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-2 ring-blue-500/20">
+                <Zap className="w-6 h-6 text-white" />
               </div>
-              <span className="font-bold text-lg text-white tracking-tight flex items-center gap-1">
-                Grok
-                <span className="text-xs font-normal text-gray-500">beta</span>
-              </span>
-            </div>
+              <div>
+                <span className="font-bold text-xl text-white tracking-tight block">
+                  Grok
+                </span>
+                <span className="text-xs text-blue-400 font-medium bg-blue-500/10 px-2 py-0.5 rounded-full">
+                  AI Assistant
+                </span>
+              </div>
+            </motion.div>
           ) : (
             <div className="flex items-center justify-center w-full">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-black border border-gray-800">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <Zap className="w-6 h-6 text-white" />
               </div>
             </div>
           )}
@@ -217,43 +244,51 @@ const Sidebar = ({
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="h-7 w-7 text-gray-500 hover:bg-gray-900 hover:text-white"
+            className="h-8 w-8 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
           >
             {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
 
-        <div className="p-2">
+        {/* New Chat Button */}
+        <div className="p-4">
           <Button
             onClick={handleCreateNewChat}
             className={cn(
-              "w-full justify-start gap-2 bg-gray-900 hover:bg-gray-800 text-white font-medium border border-gray-800",
-              !isExpanded && "px-1.5"
+              "w-full justify-start gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold border-0 shadow-lg h-11 rounded-xl transition-all duration-200",
+              !isExpanded && "px-2 justify-center"
             )}
           >
-            <Plus className="h-4 w-4" />
-            {isExpanded && <span>New Query</span>}
+            <Plus className="h-5 w-5" />
+            {isExpanded && <span>New Conversation</span>}
           </Button>
         </div>
 
         {isExpanded && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            <div className="px-3 pb-2">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            {/* Search */}
+            <div className="px-4 pb-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search queries..."
+                  placeholder="Search conversations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-black border-gray-800 h-9 text-gray-300 placeholder-gray-600 focus:ring-1 focus:ring-gray-700 focus:border-transparent"
+                  className="pl-11 pr-4 bg-gray-900/50 border-gray-700 h-10 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 rounded-xl backdrop-blur-sm transition-all duration-200"
                 />
               </div>
             </div>
 
+            {/* Categories */}
             {categories.length > 0 && (
-              <div className="px-3 pb-2">
+              <div className="px-4 pb-4">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Categories</h3>
                 <motion.div 
-                  className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide"
+                  className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.3 }}
@@ -261,10 +296,10 @@ const Sidebar = ({
                   <button
                     onClick={() => setActiveCategory(null)}
                     className={cn(
-                      "px-2 py-1 text-xs rounded-full whitespace-nowrap transition-colors",
+                      "px-3 py-2 text-sm rounded-xl whitespace-nowrap transition-all duration-200 font-medium",
                       activeCategory === null
-                        ? "bg-gray-800 text-white"
-                        : "bg-gray-900 text-gray-400 hover:bg-gray-800"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                        : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
                     )}
                   >
                     All
@@ -274,10 +309,10 @@ const Sidebar = ({
                       key={category}
                       onClick={() => setActiveCategory(category)}
                       className={cn(
-                        "px-2 py-1 text-xs rounded-full whitespace-nowrap transition-colors",
+                        "px-3 py-2 text-sm rounded-xl whitespace-nowrap transition-all duration-200 font-medium",
                         activeCategory === category
-                          ? "bg-gray-800 text-white"
-                          : "bg-gray-900 text-gray-400 hover:bg-gray-800"
+                          ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                          : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
                       )}
                     >
                       {category}
@@ -287,28 +322,30 @@ const Sidebar = ({
               </div>
             )}
 
-            <div className="px-3 pb-2">
+            {/* Archive Toggle */}
+            <div className="px-4 pb-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
                 className={cn(
-                  "w-full justify-start gap-2 text-xs h-8",
+                  "w-full justify-start gap-3 text-sm h-10 rounded-xl transition-all duration-200",
                   showArchived
-                    ? "text-gray-400 hover:text-gray-300 hover:bg-gray-900"
-                    : "text-gray-500 hover:text-gray-400 hover:bg-gray-900"
+                    ? "bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20"
+                    : "text-gray-400 hover:text-white hover:bg-gray-700/50"
                 )}
               >
-                <Archive className="h-3.5 w-3.5" />
+                <Archive className="h-4 w-4" />
                 <span>{showArchived ? "Hide Archived" : "Show Archived"}</span>
               </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+            {/* Chat List */}
+            <div className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
               <DragDropContext onDragEnd={onDragEnd}>
                 {Object.entries(groupedChats).map(([groupName, chats]) => (
-                  <div key={groupName} className="mb-4">
-                    <div className="text-xs font-semibold text-gray-600 uppercase px-2 py-1 sticky top-0 bg-black z-10">
+                  <div key={groupName} className="mb-6">
+                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 sticky top-0 bg-black/80 backdrop-blur-sm z-10 rounded-lg mb-2">
                       {groupName}
                     </div>
                     <Droppable droppableId={groupName}>
@@ -316,155 +353,204 @@ const Sidebar = ({
                         <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-1">
                           {chats.map((chat, index) => (
                             <Draggable key={chat.id} draggableId={chat.id} index={index}>
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  className={cn(
-                                    "group relative rounded-lg transition-all duration-200",
-                                    currentChatId === chat.id
-                                      ? "bg-gray-900 border border-gray-800"
-                                      : "hover:bg-gray-900",
-                                    snapshot.isDragging && "bg-gray-800 shadow-lg"
+                      {(provided, snapshot) => (
+                        <motion.div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={cn(
+                            "group relative rounded-xl transition-all duration-200 border backdrop-blur-sm",
+                            currentChatId === chat.id
+                              ? "bg-blue-500/10 border-blue-500/30 shadow-lg shadow-blue-500/10"
+                              : "bg-gray-900/30 border-gray-800 hover:bg-gray-800/50 hover:border-gray-700",
+                            snapshot.isDragging && "bg-gray-700/50 shadow-2xl scale-105 rotate-1"
+                          )}
+                          onMouseEnter={() => setHoveredChatId(chat.id)}
+                          onMouseLeave={() => setHoveredChatId(null)}
+                          whileHover={{ y: -2 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {editingChatId === chat.id ? (
+                            <div className="flex items-center gap-2 p-3">
+                              <Input
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                className="h-9 text-sm bg-gray-800/50 text-gray-200 border-gray-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 rounded-lg"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleSaveEdit();
+                                  if (e.key === "Escape") {
+                                    setEditingChatId(null);
+                                    setEditTitle("");
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-green-400 hover:bg-green-500/20 rounded-lg"
+                                onClick={handleSaveEdit}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-gray-400 hover:bg-gray-700/50 rounded-lg"
+                                onClick={() => {
+                                  setEditingChatId(null);
+                                  setEditTitle("");
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div
+                              className="flex items-center gap-3 p-3 cursor-pointer"
+                              onClick={() => onSelectChat && onSelectChat(chat.id)}
+                            >
+                              {/* Drag Handle */}
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div {...provided.dragHandleProps} className="text-gray-500 hover:text-gray-300 transition-colors">
+                                      <GripVertical className="h-4 w-4" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-gray-800 border-gray-700">Drag to reorder</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              {/* Chat Content */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {chat.isPinned && (
+                                    <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
                                   )}
-                                  onMouseEnter={() => setHoveredChatId(chat.id)}
-                                  onMouseLeave={() => setHoveredChatId(null)}
-                                >
-                                  {editingChatId === chat.id ? (
-                                    <div className="flex items-center gap-1 p-2">
-                                      <Input
-                                        value={editTitle}
-                                        onChange={(e) => setEditTitle(e.target.value)}
-                                        className="h-8 text-sm bg-black text-gray-300 border-gray-800 focus:ring-1 focus:ring-gray-700 focus:border-transparent"
-                                        autoFocus
-                                        onKeyDown={(e) => {
-                                          if (e.key === "Enter") handleSaveEdit();
-                                          if (e.key === "Escape") {
-                                            setEditingChatId(null);
-                                            setEditTitle("");
-                                          }
-                                        }}
-                                      />
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-6 w-6 text-gray-400 hover:bg-gray-800"
-                                        onClick={handleSaveEdit}
-                                      >
-                                        <Edit className="h-3 w-3" />
-                                      </Button>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className="h-6 w-6 text-gray-400 hover:bg-gray-800"
-                                        onClick={() => {
-                                          setEditingChatId(null);
-                                          setEditTitle("");
-                                        }}
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <div
-                                      className="flex items-center justify-between p-2 cursor-pointer"
-                                      onClick={() => onSelectChat && onSelectChat(chat.id)}
-                                    >
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <div {...provided.dragHandleProps} className="mr-1 text-gray-600 hover:text-gray-400">
-                                              <GripVertical className="h-4 w-4" />
-                                            </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent>Drag to reorder</TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5">
-                                          {chat.isPinned && (
-                                            <Star className="h-3 w-3 text-gray-500 fill-gray-500" />
-                                          )}
-                                          {chat.isArchived && (
-                                            <Archive className="h-3 w-3 text-gray-600" />
-                                          )}
-                                          <div className="font-medium text-sm text-gray-200 truncate">
-                                            {chat.title}
-                                          </div>
-                                        </div>
-                                        <div className="text-xs text-gray-600 flex items-center gap-1 mt-0.5">
-                                          <Clock className="h-3 w-3" />
-                                          <span>{chat.date}</span>
-                                          <span>•</span>
-                                          <span>{chat.messagesCount} messages</span>
-                                          {chat.category && (
-                                            <>
-                                              <span>•</span>
-                                              <span className="text-gray-500">{chat.category}</span>
-                                            </>
-                                          )}
-                                        </div>
-                                      </div>
-                                      {(hoveredChatId === chat.id || currentChatId === chat.id) && (
-                                        <motion.div 
-                                          className="flex opacity-100 transition-opacity"
-                                          initial={{ scale: 0.95 }}
-                                          animate={{ scale: 1 }}
-                                          transition={{ duration: 0.2 }}
-                                        >
-                                          <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-6 w-6 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleTogglePin(chat.id, !chat.isPinned);
-                                            }}
-                                            title={chat.isPinned ? "Unpin" : "Pin"}
-                                          >
-                                            <Star className={cn("h-3 w-3", chat.isPinned && "fill-gray-500 text-gray-500")} />
-                                          </Button>
-                                          <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-6 w-6 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleEditChat(chat);
-                                            }}
-                                            title="Rename"
-                                          >
-                                            <Edit className="h-3 w-3" />
-                                          </Button>
-                                          <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-6 w-6 text-gray-500 hover:bg-gray-800 hover:text-gray-300"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleToggleArchive(chat.id, !chat.isArchived);
-                                            }}
-                                            title={chat.isArchived ? "Unarchive" : "Archive"}
-                                          >
-                                            <Archive className="h-3 w-3" />
-                                          </Button>
-                                          <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-6 w-6 text-gray-500 hover:bg-gray-800 hover:text-red-400"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleDeleteChat(chat.id);
-                                            }}
-                                            title="Delete"
-                                          >
-                                            <Trash2 className="h-3 w-3" />
-                                          </Button>
-                                        </motion.div>
-                                      )}
-                                    </div>
+                                  {chat.isArchived && (
+                                    <Archive className="h-3 w-3 text-gray-500" />
+                                  )}
+                                  <div className={`font-semibold text-sm truncate ${
+                                    currentChatId === chat.id ? 'text-blue-300' : 'text-gray-200'
+                                  }`}>
+                                    {chat.title}
+                                  </div>
+                                </div>
+                                <div className="text-xs text-gray-500 flex items-center gap-1.5">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{chat.date}</span>
+                                  <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                  <span>{chat.messagesCount} msgs</span>
+                                  {chat.category && (
+                                    <>
+                                      <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+                                      <span className="text-blue-400 text-xs px-1.5 py-0.5 bg-blue-500/10 rounded-md">
+                                        {chat.category}
+                                      </span>
+                                    </>
                                   )}
                                 </div>
+                              </div>
+                              {/* Action Buttons */}
+                              {(hoveredChatId === chat.id || currentChatId === chat.id) && (
+                                <motion.div 
+                                  className="flex items-center gap-1 bg-gray-800/80 backdrop-blur-sm rounded-lg p-1 border border-gray-700"
+                                  initial={{ opacity: 0, scale: 0.9, x: 10 }}
+                                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                                  transition={{ duration: 0.15 }}
+                                >
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className={`h-7 w-7 rounded-md transition-all duration-200 ${
+                                            chat.isPinned 
+                                              ? "text-yellow-400 bg-yellow-500/20 hover:bg-yellow-500/30" 
+                                              : "text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/20"
+                                          }`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleTogglePin(chat.id, !chat.isPinned);
+                                          }}
+                                        >
+                                          <Star className={cn("h-3.5 w-3.5", chat.isPinned && "fill-current")} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-gray-800 border-gray-700">
+                                        {chat.isPinned ? "Unpin chat" : "Pin chat"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-7 w-7 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 rounded-md transition-all duration-200"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditChat(chat);
+                                          }}
+                                        >
+                                          <Edit className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-gray-800 border-gray-700">Rename chat</TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className={`h-7 w-7 rounded-md transition-all duration-200 ${
+                                            chat.isArchived 
+                                              ? "text-orange-400 bg-orange-500/20 hover:bg-orange-500/30" 
+                                              : "text-gray-400 hover:text-orange-400 hover:bg-orange-500/20"
+                                          }`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleArchive(chat.id, !chat.isArchived);
+                                          }}
+                                        >
+                                          <Archive className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-gray-800 border-gray-700">
+                                        {chat.isArchived ? "Unarchive chat" : "Archive chat"}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-7 w-7 text-gray-400 hover:text-red-400 hover:bg-red-500/20 rounded-md transition-all duration-200"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteChat(chat.id);
+                                          }}
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-gray-800 border-gray-700">Delete chat</TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </motion.div>
+                              )}
+                                    </div>
+                                  )}
+                                </motion.div>
                               )}
                             </Draggable>
                           ))}
@@ -485,37 +571,107 @@ const Sidebar = ({
           </motion.div>
         )}
 
-        <div className="mt-auto p-2 border-t border-gray-900">
+        {/* Footer */}
+        <div className="mt-auto p-4 border-t border-gray-800 bg-gray-900/20">
           {isExpanded ? (
-            <div className="space-y-1">
-              <Button variant="ghost" className="w-full justify-start gap-2 text-gray-500 hover:bg-gray-900 hover:text-gray-300">
+            <motion.div 
+              className="space-y-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-10 rounded-xl transition-all duration-200"
+              >
                 <FolderOpen className="h-4 w-4" />
-                <span>Query Archive</span>
+                <span>Chat Archive</span>
               </Button>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-gray-500 hover:bg-gray-900 hover:text-gray-300">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-10 rounded-xl transition-all duration-200"
+                onClick={() => {
+                  if (onOpenSettings) {
+                    onOpenSettings();
+                  } else {
+                    setShowSettings(true);
+                  }
+                }}
+              >
                 <Settings className="h-4 w-4" />
-                <span>Preferences</span>
+                <span>Settings</span>
               </Button>
-              <Button variant="ghost" className="w-full justify-start gap-2 text-gray-500 hover:bg-gray-900 hover:text-gray-300">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-10 rounded-xl transition-all duration-200"
+              >
                 <HelpCircle className="h-4 w-4" />
-                <span>Support</span>
+                <span>Help & Support</span>
               </Button>
-            </div>
+            </motion.div>
           ) : (
-            <div className="flex flex-col gap-1">
-              <Button variant="ghost" size="icon" title="Query Archive" className="text-gray-500 hover:bg-gray-900 hover:text-gray-300">
-                <FolderOpen className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" title="Preferences" className="text-gray-500 hover:bg-gray-900 hover:text-gray-300">
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" title="Support" className="text-gray-500 hover:bg-gray-900 hover:text-gray-300">
-                <HelpCircle className="h-4 w-4" />
-              </Button>
+            <div className="flex flex-col gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200"
+                    >
+                      <FolderOpen className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-gray-800 border-gray-700">Chat Archive</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200"
+                      onClick={() => {
+                        if (onOpenSettings) {
+                          onOpenSettings();
+                        } else {
+                          setShowSettings(true);
+                        }
+                      }}
+                    >
+                      <Settings className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-gray-800 border-gray-700">Settings</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200"
+                    >
+                      <HelpCircle className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-gray-800 border-gray-700">Help & Support</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
         </div>
       </motion.aside>
+      
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
     </AnimatePresence>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef } from "react";
 import { Mic, Paperclip, Send, Image, X, File, Wind, Bot, Smile, StopCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -17,15 +17,18 @@ interface ChatInputProps {
   onModeChange?: (mode: "fun" | "regular") => void;
 }
 
-const ChatInput = ({
-  onSendMessage,
-  onStopGeneration,
-  disabled = false,
-  isGenerating = false,
-  placeholder = "Ask Grok anything...",
-  aiMode = "regular",
-  onModeChange
-}: ChatInputProps) => {
+const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
+  {
+    onSendMessage,
+    onStopGeneration,
+    disabled = false,
+    isGenerating = false,
+    placeholder = "Ask Grok anything...",
+    aiMode = "regular",
+    onModeChange
+  },
+  ref
+) => {
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -106,32 +109,40 @@ const ChatInput = ({
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black z-50">
-      <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4">
+    <div className="border-t border-gray-800 bg-black/95 backdrop-blur-sm">
+      <div className="max-w-4xl mx-auto px-4 py-4">
         <AnimatePresence>
           {attachments.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="px-2 py-2 mb-2"
+              className="mb-4"
             >
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-3 flex-wrap">
                 {attachments.map((file, index) => (
                   <motion.div 
                     key={index} 
-                    initial={{ scale: 0.95 }}
-                    animate={{ scale: 1 }}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 rounded-lg border border-gray-800"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="flex items-center gap-3 px-4 py-3 bg-gray-900/80 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors group"
                   >
-                    <File className="h-4 w-4 text-gray-400" />
-                    <span className="text-xs text-gray-300 max-w-[150px] truncate">{file.name}</span>
-                    <button
+                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                      <File className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-200 truncate max-w-[200px]">{file.name}</p>
+                      <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
                       onClick={() => removeAttachment(index)}
-                      className="text-gray-500 hover:text-gray-300"
+                      className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
+                      <X className="h-4 w-4" />
+                    </Button>
                   </motion.div>
                 ))}
               </div>
@@ -140,44 +151,71 @@ const ChatInput = ({
         </AnimatePresence>
 
         <div
-          className={`relative transition-all ${dragActive ? "ring-2 ring-blue-500 rounded-2xl" : ""}`}
+          className={`relative transition-all duration-300 ${dragActive ? "ring-2 ring-blue-500/50 bg-blue-500/5" : ""} rounded-2xl`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <div className="relative flex items-end gap-2 sm:gap-3 bg-gray-900 rounded-2xl border border-gray-800 focus-within:border-gray-700 transition-all p-2">
-            <div className="flex items-center gap-1">
-              <Popover open={showAttachMenu} onOpenChange={setShowAttachMenu}>
-                <PopoverTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-9 w-9 flex-shrink-0 rounded-full hover:bg-gray-800 text-gray-400"
-                    disabled={disabled || isGenerating}
-                  >
-                    <Paperclip className="h-4.5 w-4.5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-48 p-2 bg-gray-900 border-gray-800" side="top" align="start">
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => imageInputRef.current?.click()}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-gray-800 text-gray-300"
-                    >
-                      <Image className="h-4 w-4" />
-                      <span>Upload Image</span>
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-gray-800 text-gray-300"
-                    >
-                      <File className="h-4 w-4" />
-                      <span>Upload File</span>
-                    </button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+          {dragActive && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 bg-blue-500/10 border-2 border-dashed border-blue-500/50 rounded-2xl flex items-center justify-center z-10"
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <File className="w-6 h-6 text-blue-400" />
+                </div>
+                <p className="text-blue-400 font-medium">Drop files here</p>
+                <p className="text-gray-400 text-sm">Upload images, documents, and more</p>
+              </div>
+            </motion.div>
+          )}
+
+          <div className="relative flex items-end gap-3 bg-gray-900/50 rounded-2xl border border-gray-800 hover:border-gray-700 focus-within:border-blue-500/50 transition-all duration-200 p-3 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Popover open={showAttachMenu} onOpenChange={setShowAttachMenu}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-10 w-10 flex-shrink-0 rounded-xl hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200"
+                          disabled={disabled || isGenerating}
+                        >
+                          <Paperclip className="h-5 w-5" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-56 p-2 bg-gray-900/95 backdrop-blur-sm border-gray-700" side="top" align="start">
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => imageInputRef.current?.click()}
+                            className="w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl hover:bg-gray-700/50 text-gray-300 hover:text-white transition-all duration-200 group"
+                          >
+                            <div className="p-1.5 rounded-lg bg-green-500/20 text-green-400 group-hover:bg-green-500/30 transition-colors">
+                              <Image className="h-4 w-4" />
+                            </div>
+                            <span>Upload Images</span>
+                          </button>
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full flex items-center gap-3 px-3 py-3 text-sm rounded-xl hover:bg-gray-700/50 text-gray-300 hover:text-white transition-all duration-200 group"
+                          >
+                            <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400 group-hover:bg-blue-500/30 transition-colors">
+                              <File className="h-4 w-4" />
+                            </div>
+                            <span>Upload Documents</span>
+                          </button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-gray-800 border-gray-700">Attach files</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <TooltipProvider>
                 <Tooltip>
@@ -185,57 +223,103 @@ const ChatInput = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-9 w-9 flex-shrink-0 rounded-full hover:bg-gray-800 text-gray-400"
+                      className="h-10 w-10 flex-shrink-0 rounded-xl hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       disabled={disabled || isGenerating}
                     >
-                      <Smile className="h-4.5 w-4.5" />
+                      <Smile className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">Emojis</TooltipContent>
+                  <TooltipContent side="top" className="bg-gray-800 border-gray-700">Add emoji</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
 
             <Textarea
-              ref={textareaRef}
+              ref={(el) => {
+                textareaRef.current = el;
+                if (ref) {
+                  if (typeof ref === 'function') {
+                    ref(el);
+                  } else {
+                    ref.current = el;
+                  }
+                }
+              }}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isGenerating ? "Grok is thinking..." : placeholder}
+              placeholder={isGenerating ? "Grok is thinking..." : "Ask Grok anything..."}
               disabled={disabled || isGenerating}
-              className="flex-1 max-h-[200px] resize-none bg-transparent border-0 p-0 pr-20 text-base placeholder:text-gray-500 focus-visible:ring-0 text-gray-100"
+              className="flex-1 max-h-[160px] resize-none bg-transparent border-0 p-0 pr-16 text-base placeholder:text-gray-400 focus-visible:ring-0 text-white leading-relaxed"
               rows={1}
             />
 
-            <div className="absolute right-2 bottom-2 flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-3">
               {isGenerating ? (
-                <Button
-                  size="icon"
-                  className="h-9 w-9 rounded-full flex-shrink-0 bg-red-500 hover:bg-red-600 text-white"
-                  onClick={onStopGeneration}
-                >
-                  <StopCircle className="h-4.5 w-4.5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        className="h-10 w-10 rounded-xl flex-shrink-0 bg-red-500/90 hover:bg-red-500 text-white transition-all duration-200 shadow-lg"
+                        onClick={onStopGeneration}
+                      >
+                        <StopCircle className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-gray-800 border-gray-700">Stop generation</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ) : (
-                <Button
-                  size="icon"
-                  className={`h-9 w-9 rounded-full flex-shrink-0 transition-all shadow-lg ${
-                    input.trim() || attachments.length > 0
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : isRecording
-                      ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
-                      : 'bg-gray-900 text-gray-400 hover:bg-gray-800'
-                  }`}
-                  onClick={input.trim() || attachments.length > 0 ? handleSend : toggleRecording}
-                  disabled={disabled && !isRecording}
-                >
-                  {input.trim() || attachments.length > 0 ? (
-                    <Send className="h-4.5 w-4.5" />
-                  ) : (
-                    <Mic className="h-4.5 w-4.5" />
-                  )}
-                </Button>
+                <>
+                  {/* Voice Recording Button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className={`h-10 w-10 rounded-xl flex-shrink-0 transition-all duration-200 ${
+                            isRecording
+                              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 animate-pulse'
+                              : 'hover:bg-gray-700/50 text-gray-400 hover:text-white'
+                          }`}
+                          onClick={toggleRecording}
+                          disabled={disabled}
+                        >
+                          <Mic className="h-5 w-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-gray-800 border-gray-700">
+                        {isRecording ? "Stop recording" : "Voice input"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {/* Send Button */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          className={`h-10 w-10 rounded-xl flex-shrink-0 transition-all duration-200 shadow-lg ${
+                            input.trim() || attachments.length > 0
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white scale-105'
+                              : 'bg-gray-700 text-gray-400 hover:bg-gray-600 cursor-not-allowed'
+                          }`}
+                          onClick={handleSend}
+                          disabled={disabled || (!input.trim() && attachments.length === 0)}
+                        >
+                          <Send className="h-5 w-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-gray-800 border-gray-700">
+                        Send message (Enter)
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
               )}
             </div>
 
@@ -247,35 +331,43 @@ const ChatInput = ({
         <AnimatePresence>
           {showEmojiPicker && (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute bottom-20 left-4 z-50"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="absolute bottom-full left-4 z-50 mb-2"
             >
-              <EmojiPicker onEmojiClick={addEmoji} theme="dark" />
+              <div className="rounded-2xl overflow-hidden shadow-2xl border border-gray-700 bg-gray-900/95 backdrop-blur-sm">
+                <EmojiPicker onEmojiClick={addEmoji} theme="dark" />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="mt-2 flex items-center justify-center text-xs text-gray-500">
-          <div className="flex items-center gap-1 rounded-full bg-gray-900 border border-gray-800 p-1">
+        <div className="mt-4 flex items-center justify-center">
+          <div className="flex items-center gap-2 rounded-2xl bg-gray-900/50 border border-gray-800 p-1.5 backdrop-blur-sm">
             {modes.map((mode) => (
               <TooltipProvider key={mode.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <motion.button
                       onClick={() => onModeChange?.(mode.id as any)}
-                      className={`px-3 py-1 rounded-full flex items-center gap-1.5 transition-all ${
+                      className={`px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-all duration-200 ${
                         aiMode === mode.id
-                          ? "bg-gray-700 text-white"
-                          : "text-gray-400 hover:bg-gray-800"
+                          ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-400 border border-blue-500/30"
+                          : "text-gray-400 hover:bg-gray-700/50 hover:text-white"
                       }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      {mode.icon}
+                      <span className={aiMode === mode.id ? "text-blue-400" : "text-gray-500"}>
+                        {mode.icon}
+                      </span>
                       <span className="hidden sm:inline">{mode.label}</span>
-                    </button>
+                    </motion.button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">{mode.desc}</TooltipContent>
+                  <TooltipContent side="top" className="bg-gray-800 border-gray-700">
+                    {mode.desc}
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             ))}
@@ -284,6 +376,8 @@ const ChatInput = ({
       </div>
     </div>
   );
-};
+});
+
+ChatInput.displayName = "ChatInput";
 
 export default ChatInput;
