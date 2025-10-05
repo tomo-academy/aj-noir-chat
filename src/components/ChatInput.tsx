@@ -106,7 +106,7 @@ const ChatInput = ({
   ];
 
   return (
-    <div className="border-t border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="border-t border-gray-900 bg-black">
       {/* Suggestions bar */}
       {suggestions.length > 0 && (
         <div className="max-w-3xl mx-auto px-4 py-2">
@@ -115,7 +115,7 @@ const ChatInput = ({
               <button
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="px-3 py-1.5 text-sm bg-muted/50 hover:bg-muted border border-border/50 rounded-full transition-all hover:scale-105"
+                className="px-3 py-1.5 text-sm bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-full transition-all hover:scale-105 text-gray-300"
               >
                 {suggestion}
               </button>
@@ -126,12 +126,12 @@ const ChatInput = ({
       
       <div className="max-w-3xl mx-auto px-4 py-4">
         <div className="relative flex items-end gap-2">
-          {/* Main input container with glassmorphism effect */}
+          {/* Main input container */}
           <div className={`relative flex-1 transition-all duration-200 ${
             isFocused 
-              ? 'bg-background/80 border-primary/20 shadow-lg shadow-primary/5' 
-              : 'bg-muted/30 border-border/30'
-          } border rounded-2xl backdrop-blur-sm`}>
+              ? 'bg-gray-900 border-gray-700' 
+              : 'bg-gray-900 border-gray-800'
+          } border rounded-lg`}>
             
             <Textarea
               ref={textareaRef}
@@ -142,11 +142,11 @@ const ChatInput = ({
               onBlur={() => setIsFocused(false)}
               placeholder={isGenerating ? "Generating response..." : placeholder}
               disabled={disabled || isGenerating}
-              className="min-h-[60px] max-h-[200px] resize-none bg-transparent border-0 px-4 py-3 pr-24 text-[15px] placeholder:text-muted-foreground/60 focus-visible:ring-0 transition-all"
+              className="min-h-[60px] max-h-[200px] resize-none bg-transparent border-0 px-4 py-3 pr-24 text-[15px] placeholder:text-gray-600 focus-visible:ring-0 transition-all text-gray-200"
               rows={1}
             />
             
-            {/* Left side controls - more compact and integrated */}
+            {/* Left side controls */}
             <div className="absolute left-2 bottom-2 flex items-center gap-1">
               <TooltipProvider>
                 <Tooltip>
@@ -154,13 +154,13 @@ const ChatInput = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 rounded-full hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"
+                      className="h-7 w-7 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors"
                       disabled={disabled || isGenerating}
                     >
                       <Paperclip className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">Attach files</TooltipContent>
+                  <TooltipContent side="top" className="text-xs bg-gray-900 border border-gray-800 text-gray-300">Attach files</TooltipContent>
                 </Tooltip>
                 
                 <Tooltip>
@@ -168,13 +168,13 @@ const ChatInput = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 rounded-full hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"
+                      className="h-7 w-7 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors"
                       disabled={disabled || isGenerating}
                     >
                       <Image className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">Add image</TooltipContent>
+                  <TooltipContent side="top" className="text-xs bg-gray-900 border border-gray-800 text-gray-300">Add image</TooltipContent>
                 </Tooltip>
                 
                 <Tooltip>
@@ -182,13 +182,13 @@ const ChatInput = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 rounded-full hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"
+                      className="h-7 w-7 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors"
                       disabled={disabled || isGenerating}
                     >
                       <FileText className="h-3.5 w-3.5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">Add document</TooltipContent>
+                  <TooltipContent side="top" className="text-xs bg-gray-900 border border-gray-800 text-gray-300">Add document</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -200,29 +200,29 @@ const ChatInput = ({
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="h-7 px-2 rounded-full hover:bg-accent/50 text-xs font-medium text-muted-foreground hover:text-foreground transition-all gap-1"
+                    className="h-7 px-2 rounded hover:bg-gray-800 text-xs font-medium text-gray-500 hover:text-gray-300 transition-all gap-1"
                     disabled={disabled || isGenerating}
                   >
                     {autoModes.find(mode => mode.id === autoMode)?.icon}
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-56 p-2" align="end">
+                <PopoverContent className="w-56 p-2 bg-gray-900 border border-gray-800" align="end">
                   <div className="space-y-1">
                     {autoModes.map((mode) => (
                       <div
                         key={mode.id}
-                        className={`flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-accent/50 transition-colors ${
-                          autoMode === mode.id ? "bg-accent/30" : ""
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-800 transition-colors ${
+                          autoMode === mode.id ? "bg-gray-800" : ""
                         }`}
                         onClick={() => setAutoMode(mode.id)}
                       >
-                        <div className="text-muted-foreground">
+                        <div className="text-gray-400">
                           {mode.icon}
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-sm">{mode.label}</div>
-                          <div className="text-xs text-muted-foreground">{mode.description}</div>
+                          <div className="font-medium text-sm text-gray-200">{mode.label}</div>
+                          <div className="text-xs text-gray-500">{mode.description}</div>
                         </div>
                       </div>
                     ))}
@@ -238,13 +238,13 @@ const ChatInput = ({
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-8 w-8 rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive transition-all"
+                        className="h-8 w-8 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-all"
                         onClick={onStopGeneration}
                       >
                         <StopCircle className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">Stop generation</TooltipContent>
+                    <TooltipContent side="top" className="text-xs bg-gray-900 border border-gray-800 text-gray-300">Stop generation</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               ) : (
@@ -255,10 +255,10 @@ const ChatInput = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className={`h-8 w-8 rounded-full hover:bg-accent/50 transition-all ${
+                          className={`h-8 w-8 rounded hover:bg-gray-800 transition-all ${
                             isRecording 
-                              ? "text-red-500 hover:text-red-600 animate-pulse" 
-                              : "text-muted-foreground hover:text-foreground"
+                              ? "text-red-500 hover:text-red-400 animate-pulse" 
+                              : "text-gray-500 hover:text-gray-300"
                           }`}
                           onClick={toggleRecording}
                           disabled={disabled}
@@ -266,7 +266,7 @@ const ChatInput = ({
                           <Mic className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
+                      <TooltipContent side="top" className="text-xs bg-gray-900 border border-gray-800 text-gray-300">
                         {isRecording ? "Stop recording" : "Voice input"}
                       </TooltipContent>
                     </Tooltip>
@@ -276,23 +276,23 @@ const ChatInput = ({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 rounded-full hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-all"
+                          className="h-8 w-8 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-all"
                           disabled={disabled}
                         >
                           <Smile className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">Add emoji</TooltipContent>
+                      <TooltipContent side="top" className="text-xs bg-gray-900 border border-gray-800 text-gray-300">Add emoji</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                   
                   <Button
                     size="icon"
                     variant={input.trim() ? "default" : "ghost"}
-                    className={`h-8 w-8 rounded-full transition-all duration-200 ${
+                    className={`h-8 w-8 rounded transition-all duration-200 ${
                       input.trim() 
-                        ? 'shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' 
-                        : 'text-muted-foreground hover:text-foreground'
+                        ? 'bg-gray-800 hover:bg-gray-700 text-white' 
+                        : 'text-gray-500 hover:text-gray-300'
                     }`}
                     onClick={handleSend}
                     disabled={disabled || input.trim() === ''}
@@ -306,22 +306,22 @@ const ChatInput = ({
         </div>
         
         {/* Enhanced hint text with character count */}
-        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="mt-3 flex items-center justify-between text-xs text-gray-600">
           <div>
             {isGenerating ? (
-              <span>Press <kbd className="px-1.5 py-0.5 bg-muted/50 rounded text-xs">Enter</kbd> to stop generation</span>
+              <span>Press <kbd className="px-1.5 py-0.5 bg-gray-900 rounded text-xs text-gray-400">Enter</kbd> to stop generation</span>
             ) : (
-              <span>Press <kbd className="px-1.5 py-0.5 bg-muted/50 rounded text-xs">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-muted/50 rounded text-xs">Shift+Enter</kbd> for new line</span>
+              <span>Press <kbd className="px-1.5 py-0.5 bg-gray-900 rounded text-xs text-gray-400">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-gray-900 rounded text-xs text-gray-400">Shift+Enter</kbd> for new line</span>
             )}
           </div>
           {input.length > 0 && (
-            <span className="text-muted-foreground/60">{input.length}/4000</span>
+            <span className="text-gray-600">{input.length}/4000</span>
           )}
         </div>
         
         {/* Enhanced recording indicator */}
         {isRecording && (
-          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-red-500 bg-red-500/5 py-2 rounded-lg border border-red-500/20">
+          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-red-400 bg-red-900/10 py-2 rounded-lg border border-red-900/30">
             <div className="flex items-center gap-1">
               <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse"></div>
               <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
