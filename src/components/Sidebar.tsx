@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Sparkles, Search, Plus, Edit, History, Settings, HelpCircle, ChevronLeft, ChevronRight, Trash2, X } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Sparkles, Search, Plus, Edit, History, Settings, HelpCircle, ChevronLeft, ChevronRight, Trash2, X, Archive, Clock, Star, FolderOpen, Zap } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,11 @@ interface ChatItem {
   id: string;
   title: string;
   date: string;
+  timestamp: number;
   messagesCount: number;
+  isPinned?: boolean;
+  isArchived?: boolean;
+  category?: string;
 }
 
 interface SidebarProps {
@@ -16,14 +20,20 @@ interface SidebarProps {
   onSelectChat?: (chatId: string) => void;
   onDeleteChat?: (chatId: string) => void;
   onRenameChat?: (chatId: string, newTitle: string) => void;
+  onPinChat?: (chatId: string, isPinned: boolean) => void;
+  onArchiveChat?: (chatId: string, isArchived: boolean) => void;
   currentChatId?: string;
 }
+
+const LOCAL_STORAGE_KEY = "grok-chat-history";
 
 const Sidebar = ({
   onNewChat,
   onSelectChat,
   onDeleteChat,
   onRenameChat,
+  onPinChat,
+  onArchiveChat,
   currentChatId
 }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -32,19 +42,43 @@ const Sidebar = ({
   const [editTitle, setEditTitle] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  // Initialize with mock data
+  // Load chat history from localStorage on mount
   useEffect(() => {
-    setChatHistory([
-      { id: "1", title: "Explore the universe with Grok", date: "Today", messagesCount: 8 },
-      { id: "2", title: "AI's role in cosmic discovery", date: "Yesterday", messagesCount: 12 },
-      { id: "3", title: "Galactic coding patterns", date: "Oct 3", messagesCount: 5 },
-      { id: "4", title: "Neural networks in space", date: "Oct 1", messagesCount: 15 },
-      { id: "5", title: "Future of interstellar tech", date: "Sep 30", messagesCount: 7 },
-      { id: "6", title: "AI-driven space exploration", date: "Sep 28", messagesCount: 10 },
-      { id: "7", title: "Blockchain in the stars", date: "Sep 25", messagesCount: 6 },
-    ]);
+    const savedChatHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedChatHistory) {
+      try {
+        const parsed = JSON.parse(savedChatHistory);
+        setChatHistory(parsed);
+      } catch (error) {
+        console.error("Failed to parse chat history from localStorage", error);
+      }
+    } else {
+      // Initialize with sample data if no saved data exists
+      const sampleData: ChatItem[] = [
+        { id: "1", title: "Explore the universe with Grok", date: "Today", timestamp: Date.now(), messagesCount: 8, isPinned: true },
+        { id: "2", title: "AI's role in cosmic discovery", date: "Yesterday", timestamp: Date.now() - 86400000, messagesCount: 12, category: "Science" },
+        { id: "3", title: "Galactic coding patterns", date: "Oct 3", timestamp: Date.now() - 172800000, messagesCount: 5, category: "Technology" },
+        { id: "4", title: "Neural networks in space", date: "Oct 1", timestamp: Date.now() - 259200000, messagesCount: 15, isPinned: true },
+        { id: "5", title: "Future of interstellar tech", date: "Sep 30", timestamp: Date.now() - 345600000, messagesCount: 7, category: "Technology" },
+        { id: "6", title: "AI-driven space exploration", date: "Sep 28", timestamp: Date.now() - 432000000, messagesCount: 10, category: "Science" },
+        { id: "7", title: "Blockchain in the stars", date: "Sep 25", timestamp: Date.now() - 518400000, messagesCount: 6, isArchived: true },
+      ];
+      setChatHistory(sampleData);
+    }
   }, []);
+
+  // Save chat history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(chatHistory));
+  }, [chatHistory]);
+
+  // Get unique categories from chat history
+  const categories = Array.from(
+    new Set(chatHistory.map(chat => chat.category).filter(Boolean) as string[])
+  );
 
   const toggleSidebar = () => setIsExpanded(!isExpanded);
 
@@ -53,7 +87,7 @@ const Sidebar = ({
     setEditTitle(chat.title);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = useCallback(() => {
     if (editingChatId && editTitle.trim() && onRenameChat) {
       onRenameChat(editingChatId, editTitle.trim());
       setChatHistory(prev =>
@@ -64,38 +98,108 @@ const Sidebar = ({
       setEditingChatId(null);
       setEditTitle("");
     }
-  };
+  }, [editingChatId, editTitle, onRenameChat]);
 
-  const handleDeleteChat = (chatId: string) => {
+  const handleDeleteChat = useCallback((chatId: string) => {
     if (onDeleteChat) {
       onDeleteChat(chatId);
       setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
     }
+  }, [onDeleteChat]);
+
+  const handleTogglePin = useCallback((chatId: string, isPinned: boolean) => {
+    if (onPinChat) {
+      onPinChat(chatId, isPinned);
+      setChatHistory(prev =>
+        prev.map(chat =>
+          chat.id === chatId ? { ...chat, isPinned } : chat
+        )
+      );
+    }
+  }, [onPinChat]);
+
+  const handleToggleArchive = useCallback((chatId: string, isArchived: boolean) => {
+    if (onArchiveChat) {
+      onArchiveChat(chatId, isArchived);
+      setChatHistory(prev =>
+        prev.map(chat =>
+          chat.id === chatId ? { ...chat, isArchived } : chat
+        )
+      );
+    }
+  }, [onArchiveChat]);
+
+  const handleCreateNewChat = () => {
+    onNewChat();
+    // Auto-collapse sidebar on mobile after creating new chat
+    if (window.innerWidth < 768) {
+      setIsExpanded(false);
+    }
   };
 
-  const filteredChats = chatHistory.filter(chat =>
-    chat.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter chats based on search query, archived status, and active category
+  const filteredChats = chatHistory.filter(chat => {
+    const matchesSearch = chat.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesArchived = showArchived ? chat.isArchived : !chat.isArchived;
+    const matchesCategory = activeCategory ? chat.category === activeCategory : true;
+    return matchesSearch && matchesArchived && matchesCategory;
+  });
+
+  // Sort chats: pinned first, then by timestamp (newest first)
+  const sortedChats = [...filteredChats].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return b.timestamp - a.timestamp;
+  });
+
+  // Group chats by date (Today, Yesterday, This Week, Older)
+  const groupedChats = sortedChats.reduce((groups, chat) => {
+    const now = Date.now();
+    const chatDate = new Date(chat.timestamp);
+    const today = new Date(now);
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    let group = "Older";
+    if (chatDate.toDateString() === today.toDateString()) {
+      group = "Today";
+    } else if (chatDate.toDateString() === yesterday.toDateString()) {
+      group = "Yesterday";
+    } else if (chatDate >= oneWeekAgo) {
+      group = "This Week";
+    }
+
+    if (!groups[group]) {
+      groups[group] = [];
+    }
+    groups[group].push(chat);
+    return groups;
+  }, {} as Record<string, ChatItem[]>);
 
   return (
     <aside
       className={cn(
-        "bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300 overflow-hidden",
+        "bg-gray-950 border-r border-gray-900 flex flex-col transition-all duration-300 overflow-hidden",
         isExpanded ? "w-72" : "w-14"
       )}
     >
       {/* Logo and toggle */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-800">
+      <div className="flex items-center justify-between p-3 border-b border-gray-900">
         {isExpanded ? (
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg shadow-blue-500/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg text-white tracking-tight">Grok</span>
+            <span className="font-bold text-lg text-white tracking-tight flex items-center gap-1">
+              Grok
+              <span className="text-xs font-normal text-gray-400">beta</span>
+            </span>
           </div>
         ) : (
           <div className="flex items-center justify-center w-full">
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg shadow-blue-500/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
           </div>
@@ -104,7 +208,7 @@ const Sidebar = ({
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="h-7 w-7 text-gray-300 hover:bg-gray-800"
+          className="h-7 w-7 text-gray-400 hover:bg-gray-900 hover:text-white"
         >
           {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </Button>
@@ -113,14 +217,14 @@ const Sidebar = ({
       {/* New Chat button */}
       <div className="p-2">
         <Button
-          onClick={onNewChat}
+          onClick={handleCreateNewChat}
           className={cn(
-            "w-full justify-start gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium",
+            "w-full justify-start gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/30",
             !isExpanded && "px-1.5"
           )}
         >
           <Plus className="h-4 w-4" />
-          {isExpanded && <span>Start New Query</span>}
+          {isExpanded && <span>New Query</span>}
         </Button>
       </div>
 
@@ -129,146 +233,246 @@ const Sidebar = ({
         <>
           <div className="px-3 pb-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search queries"
+                placeholder="Search queries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-gray-800 border-0 h-9 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500"
+                className="pl-10 bg-gray-900 border-gray-800 h-9 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-2 pb-4">
-            <div className="text-xs font-semibold text-gray-400 uppercase px-2 py-2">
-              {searchQuery ? "Search Results" : "Query History"}
-            </div>
-            <div className="space-y-1">
-              {filteredChats.length > 0 ? (
-                filteredChats.map((chat) => (
-                  <div
-                    key={chat.id}
+          {/* Category filter */}
+          {categories.length > 0 && (
+            <div className="px-3 pb-2">
+              <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                <button
+                  onClick={() => setActiveCategory(null)}
+                  className={cn(
+                    "px-2 py-1 text-xs rounded-full whitespace-nowrap transition-colors",
+                    activeCategory === null
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  )}
+                >
+                  All
+                </button>
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
                     className={cn(
-                      "group relative rounded-lg transition-colors",
-                      currentChatId === chat.id ? "bg-gray-800" : "hover:bg-gray-800/70"
+                      "px-2 py-1 text-xs rounded-full whitespace-nowrap transition-colors",
+                      activeCategory === category
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                     )}
-                    onMouseEnter={() => setHoveredChatId(chat.id)}
-                    onMouseLeave={() => setHoveredChatId(null)}
                   >
-                    {editingChatId === chat.id ? (
-                      <div className="flex items-center gap-1 p-2">
-                        <Input
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          className="h-8 text-sm bg-gray-700 text-gray-200 border-gray-600 focus:ring-blue-500"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSaveEdit();
-                            if (e.key === "Escape") {
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Toggle archived */}
+          <div className="px-3 pb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowArchived(!showArchived)}
+              className={cn(
+                "w-full justify-start gap-2 text-xs h-8",
+                showArchived
+                  ? "text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  : "text-gray-400 hover:text-gray-300 hover:bg-gray-800"
+              )}
+            >
+              <Archive className="h-3.5 w-3.5" />
+              <span>{showArchived ? "Hide Archived" : "Show Archived"}</span>
+            </Button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+            {Object.entries(groupedChats).map(([groupName, chats]) => (
+              <div key={groupName} className="mb-4">
+                <div className="text-xs font-semibold text-gray-500 uppercase px-2 py-1 sticky top-0 bg-gray-950 z-10">
+                  {groupName}
+                </div>
+                <div className="space-y-1">
+                  {chats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={cn(
+                        "group relative rounded-lg transition-all duration-200",
+                        currentChatId === chat.id
+                          ? "bg-gray-900 border border-gray-800 shadow-sm"
+                          : "hover:bg-gray-900/50"
+                      )}
+                      onMouseEnter={() => setHoveredChatId(chat.id)}
+                      onMouseLeave={() => setHoveredChatId(null)}
+                    >
+                      {editingChatId === chat.id ? (
+                        <div className="flex items-center gap-1 p-2">
+                          <Input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="h-8 text-sm bg-gray-800 text-gray-200 border-gray-700 focus:ring-blue-500 focus:border-transparent"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSaveEdit();
+                              if (e.key === "Escape") {
+                                setEditingChatId(null);
+                                setEditTitle("");
+                              }
+                            }}
+                          />
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-gray-300 hover:bg-gray-700"
+                            onClick={handleSaveEdit}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-gray-300 hover:bg-gray-700"
+                            onClick={() => {
                               setEditingChatId(null);
                               setEditTitle("");
-                            }
-                          }}
-                        />
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-gray-300 hover:bg-gray-700"
-                          onClick={handleSaveEdit}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6 text-gray-300 hover:bg-gray-700"
-                          onClick={() => {
-                            setEditingChatId(null);
-                            setEditTitle("");
-                          }}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div
-                        className="flex items-center justify-between p-2 cursor-pointer"
-                        onClick={() => onSelectChat && onSelectChat(chat.id)}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-gray-200 truncate">{chat.title}</div>
-                          <div className="text-xs text-gray-400 flex items-center gap-1">
-                            <span>{chat.date}</span>
-                            <span>•</span>
-                            <span>{chat.messagesCount} responses</span>
-                          </div>
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
-                        {(hoveredChatId === chat.id || currentChatId === chat.id) && (
-                          <div className="flex opacity-100 transition-opacity">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 text-gray-300 hover:bg-gray-700"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditChat(chat);
-                              }}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 text-red-500 hover:bg-gray-700 hover:text-red-400"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteChat(chat.id);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                      ) : (
+                        <div
+                          className="flex items-center justify-between p-2 cursor-pointer"
+                          onClick={() => onSelectChat && onSelectChat(chat.id)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              {chat.isPinned && (
+                                <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                              )}
+                              {chat.isArchived && (
+                                <Archive className="h-3 w-3 text-gray-500" />
+                              )}
+                              <div className="font-medium text-sm text-gray-200 truncate">
+                                {chat.title}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                              <Clock className="h-3 w-3" />
+                              <span>{chat.date}</span>
+                              <span>•</span>
+                              <span>{chat.messagesCount} messages</span>
+                              {chat.category && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-blue-400">{chat.category}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-sm text-gray-400">
-                  No queries found
+                          {(hoveredChatId === chat.id || currentChatId === chat.id) && (
+                            <div className="flex opacity-100 transition-opacity">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTogglePin(chat.id, !chat.isPinned);
+                                }}
+                                title={chat.isPinned ? "Unpin" : "Pin"}
+                              >
+                                <Star className={cn("h-3 w-3", chat.isPinned && "fill-yellow-500 text-yellow-500")} />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditChat(chat);
+                                }}
+                                title="Rename"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleArchive(chat.id, !chat.isArchived);
+                                }}
+                                title={chat.isArchived ? "Unarchive" : "Archive"}
+                              >
+                                <Archive className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-red-500 hover:bg-gray-800 hover:text-red-400"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteChat(chat.id);
+                                }}
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
+            
+            {sortedChats.length === 0 && (
+              <div className="text-center py-8 text-sm text-gray-500">
+                {searchQuery ? "No queries match your search" : "No queries yet"}
+              </div>
+            )}
           </div>
         </>
       )}
 
       {/* Bottom buttons */}
-      <div className="mt-auto p-2 border-t border-gray-800">
+      <div className="mt-auto p-2 border-t border-gray-900">
         {isExpanded ? (
           <div className="space-y-1">
-            <Button variant="ghost" className="w-full justify-start gap-2 text-gray-300 hover:bg-gray-800">
-              <History className="h-4 w-4" />
+            <Button variant="ghost" className="w-full justify-start gap-2 text-gray-400 hover:bg-gray-900 hover:text-white">
+              <FolderOpen className="h-4 w-4" />
               <span>Query Archive</span>
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-gray-300 hover:bg-gray-800">
+            <Button variant="ghost" className="w-full justify-start gap-2 text-gray-400 hover:bg-gray-900 hover:text-white">
               <Settings className="h-4 w-4" />
               <span>Preferences</span>
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2 text-gray-300 hover:bg-gray-800">
+            <Button variant="ghost" className="w-full justify-start gap-2 text-gray-400 hover:bg-gray-900 hover:text-white">
               <HelpCircle className="h-4 w-4" />
               <span>Support</span>
             </Button>
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            <Button variant="ghost" size="icon" title="Query Archive" className="text-gray-300 hover:bg-gray-800">
-              <History className="h-4 w-4" />
+            <Button variant="ghost" size="icon" title="Query Archive" className="text-gray-400 hover:bg-gray-900 hover:text-white">
+              <FolderOpen className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" title="Preferences" className="text-gray-300 hover:bg-gray-800">
+            <Button variant="ghost" size="icon" title="Preferences" className="text-gray-400 hover:bg-gray-900 hover:text-white">
               <Settings className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" title="Support" className="text-gray-300 hover:bg-gray-800">
+            <Button variant="ghost" size="icon" title="Support" className="text-gray-400 hover:bg-gray-900 hover:text-white">
               <HelpCircle className="h-4 w-4" />
             </Button>
           </div>
