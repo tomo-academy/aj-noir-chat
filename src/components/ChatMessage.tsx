@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-import { User, Sparkles, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw, Share2, Bookmark, MoreHorizontal, Edit3, Flag, Heart, Zap } from "lucide-react";
+import { memo, useState, useRef, useEffect } from "react";
+import { User, Sparkles, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw, Share2, Bookmark, MoreHorizontal, Edit3, Flag, Heart, Zap, Clock, MessageSquare, Bot, Star, Download, ExternalLink, Eye, EyeOff, Volume2, VolumeX, Play, Pause, RotateCcw } from "lucide-react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import ReactMarkdown from 'react-markdown';
@@ -11,6 +11,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "./ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
 import LazyImage from './LazyImage';
 import { cn } from "@/lib/utils";
 
@@ -18,24 +20,40 @@ interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   messageId?: string;
+  timestamp?: Date;
+  isStreaming?: boolean;
+  model?: string;
+  tokens?: number;
   onCopy?: () => void;
   onRefresh?: () => void;
   onThumbsUp?: () => void;
   onThumbsDown?: () => void;
   onShare?: (content: string) => void;
   onBookmark?: () => void;
+  onEdit?: (newContent: string) => void;
+  onDelete?: () => void;
+  onRegenerate?: () => void;
+  onContinue?: () => void;
 }
 
 const ChatMessage = memo(({ 
   role, 
   content, 
   messageId,
+  timestamp,
+  isStreaming = false,
+  model,
+  tokens,
   onCopy,
   onRefresh,
   onThumbsUp,
   onThumbsDown,
   onShare,
-  onBookmark
+  onBookmark,
+  onEdit,
+  onDelete,
+  onRegenerate,
+  onContinue
 }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
@@ -45,6 +63,11 @@ const ChatMessage = memo(({
   const [isLiked, setIsLiked] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showMetadata, setShowMetadata] = useState(false);
+  const [streamingProgress, setStreamingProgress] = useState(0);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -74,6 +97,30 @@ const ChatMessage = memo(({
 
   const handleShare = () => {
     if (onShare) onShare(content);
+  };
+
+  // Simulate streaming progress
+  useEffect(() => {
+    if (isStreaming) {
+      const interval = setInterval(() => {
+        setStreamingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + Math.random() * 15;
+        });
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [isStreaming]);
+
+  const formatTimestamp = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).format(date);
   };
 
   const components = {
@@ -239,13 +286,14 @@ const ChatMessage = memo(({
 
   return (
     <motion.div 
+      ref={messageRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`w-full py-4 sm:py-6 px-3 sm:px-4 relative group transition-all duration-200 ${
+      className={`w-full py-6 px-4 relative group transition-all duration-300 ${
         isUser 
-          ? 'hover:bg-background-alt/30' 
-          : 'bg-background-alt/50 border-b border-border/30 hover:bg-background-alt/70'
+          ? 'hover:bg-gray-900/20' 
+          : 'bg-gradient-to-r from-gray-900/30 via-gray-800/20 to-gray-900/30 border-b border-gray-800/30 hover:from-gray-900/40 hover:via-gray-800/30 hover:to-gray-900/40'
       }`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -257,18 +305,22 @@ const ChatMessage = memo(({
               <motion.div 
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-foreground/10 to-foreground/20 border border-border-strong/50 flex items-center justify-center shadow-lg backdrop-blur-sm"
+                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-gray-700/50 flex items-center justify-center shadow-lg backdrop-blur-sm relative"
               >
-                <User className="w-4 h-4 sm:w-5 sm:h-5 text-foreground-dim" />
+                <User className="w-5 h-5 text-blue-400" />
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-900"></div>
               </motion.div>
             ) : (
               <motion.div 
                 whileHover={{ scale: 1.05, rotate: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-primary/95 to-foreground border border-border-strong/30 flex items-center justify-center shadow-xl backdrop-blur-sm relative overflow-hidden"
+                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 border border-gray-700/30 flex items-center justify-center shadow-xl backdrop-blur-sm relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-foreground/5 to-foreground/10" />
-                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-background relative z-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10" />
+                <Zap className="w-5 h-5 text-white relative z-10" />
+                {isStreaming && (
+                  <div className="absolute inset-0 rounded-2xl border-2 border-blue-400 animate-pulse"></div>
+                )}
               </motion.div>
             )}
           </div>
@@ -276,25 +328,60 @@ const ChatMessage = memo(({
           <div className="flex-1 min-w-0">
             <div className="relative">
               {/* Username/Role label */}
-              <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-                <span className={`text-xs sm:text-sm font-bold tracking-wide ${
-                  isUser ? 'text-foreground-dim' : 'text-primary'
-                }`}>
-                  {isUser ? 'You' : 'AJ STUDIOZ'}
-                </span>
-                {!isUser && (
-                  <span className="text-2xs text-foreground-muted bg-accent/30 border border-border/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg font-medium uppercase tracking-wider">
-                    AI Assistant
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-bold tracking-wide ${
+                    isUser ? 'text-gray-300' : 'text-blue-400'
+                  }`}>
+                    {isUser ? 'You' : 'AJ STUDIOZ'}
                   </span>
-                )}
-                <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-                  isUser ? 'bg-foreground-muted/50' : 'bg-success/80 animate-pulse-slow'
-                }`} />
+                  {!isUser && (
+                    <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-xs">
+                      AI Assistant
+                    </Badge>
+                  )}
+                  {model && (
+                    <Badge variant="outline" className="bg-gray-800/50 text-gray-400 border-gray-600 text-xs">
+                      {model}
+                    </Badge>
+                  )}
+                  <div className={`w-2 h-2 rounded-full ${
+                    isUser ? 'bg-gray-500' : isStreaming ? 'bg-blue-400 animate-pulse' : 'bg-green-400'
+                  }`} />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {timestamp && (
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {formatTimestamp(timestamp)}
+                    </span>
+                  )}
+                  {tokens && (
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      <Zap className="w-3 h-3" />
+                      {tokens.toLocaleString()}
+                    </span>
+                  )}
+                  {isStreaming && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-1 bg-gray-700 rounded-full overflow-hidden">
+                        <motion.div 
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                          initial={{ width: "0%" }}
+                          animate={{ width: `${streamingProgress}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                      <span className="text-xs text-blue-400">Streaming...</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Message content */}
-              <div className={`text-sm sm:text-[15px] prose prose-sm dark:prose-invert max-w-none leading-relaxed font-medium ${
-                isUser ? 'text-foreground-dim' : 'text-foreground'
+              <div className={`text-sm prose prose-sm dark:prose-invert max-w-none leading-relaxed ${
+                isUser ? 'text-gray-300' : 'text-gray-100'
               }`}>
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -313,10 +400,10 @@ const ChatMessage = memo(({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="flex items-center gap-1 mt-3 sm:mt-4"
+                    className="flex items-center gap-2 mt-4"
                   >
                     {/* Primary actions */}
-                    <div className="flex items-center gap-0.5 sm:gap-1 bg-gray-800/50 backdrop-blur-sm rounded-xl p-0.5 sm:p-1 border border-gray-700">
+                    <div className="flex items-center gap-1 bg-gray-800/60 backdrop-blur-sm rounded-xl p-1 border border-gray-700/50">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
