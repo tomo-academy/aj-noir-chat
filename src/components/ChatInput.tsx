@@ -109,39 +109,39 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
   ];
 
   return (
-    <div className="border-t border-gray-800 bg-black/95 backdrop-blur-sm">
-      <div className="max-w-4xl mx-auto px-4 py-4">
+    <div className="border-t border-gray-800 bg-black/95 backdrop-blur-sm sticky bottom-0 z-20">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <AnimatePresence>
           {attachments.length > 0 && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className="mb-4"
+              className="mb-3 sm:mb-4"
             >
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-2 sm:gap-3 flex-wrap">
                 {attachments.map((file, index) => (
                   <motion.div 
                     key={index} 
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.95, opacity: 0 }}
-                    className="flex items-center gap-3 px-4 py-3 bg-gray-900/80 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors group"
+                    className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-900/80 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors group"
                   >
-                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
-                      <File className="h-4 w-4" />
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                      <File className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-200 truncate max-w-[200px]">{file.name}</p>
+                      <p className="text-xs sm:text-sm font-medium text-gray-200 truncate max-w-[150px] sm:max-w-[200px]">{file.name}</p>
                       <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB</p>
                     </div>
                     <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => removeAttachment(index)}
-                      className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                      className="h-7 w-7 sm:h-8 sm:w-8 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all touch-manipulation"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </motion.div>
                 ))}
@@ -173,8 +173,8 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
             </motion.div>
           )}
 
-          <div className="relative flex items-end gap-3 bg-gray-900/50 rounded-2xl border border-gray-800 hover:border-gray-700 focus-within:border-blue-500/50 transition-all duration-200 p-3 backdrop-blur-sm">
-            <div className="flex items-center gap-2">
+          <div className="relative flex items-end gap-2 sm:gap-3 bg-gray-900/50 rounded-2xl border border-gray-800 hover:border-gray-700 focus-within:border-blue-500/50 transition-all duration-200 p-2.5 sm:p-3 backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -183,10 +183,10 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-10 w-10 flex-shrink-0 rounded-xl hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200"
+                          className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 rounded-xl hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200 touch-manipulation"
                           disabled={disabled || isGenerating}
                         >
-                          <Paperclip className="h-5 w-5" />
+                          <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-56 p-2 bg-gray-900/95 backdrop-blur-sm border-gray-700" side="top" align="start">
@@ -223,11 +223,11 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-10 w-10 flex-shrink-0 rounded-xl hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200"
+                      className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 rounded-xl hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200 touch-manipulation"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       disabled={disabled || isGenerating}
                     >
-                      <Smile className="h-5 w-5" />
+                      <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="bg-gray-800 border-gray-700">Add emoji</TooltipContent>
@@ -249,23 +249,23 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isGenerating ? "Grok is thinking..." : "Ask Grok anything..."}
+              placeholder={isGenerating ? "AJ STUDIOZ is thinking..." : "Ask AJ STUDIOZ anything..."}
               disabled={disabled || isGenerating}
-              className="flex-1 max-h-[160px] resize-none bg-transparent border-0 p-0 pr-16 text-base placeholder:text-gray-400 focus-visible:ring-0 text-white leading-relaxed"
+              className="flex-1 max-h-[120px] sm:max-h-[160px] resize-none bg-transparent border-0 p-0 pr-12 sm:pr-16 text-sm sm:text-base placeholder:text-gray-400 focus-visible:ring-0 text-white leading-relaxed"
               rows={1}
             />
 
-            <div className="flex items-center gap-2 ml-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 ml-2 sm:ml-3">
               {isGenerating ? (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         size="icon"
-                        className="h-10 w-10 rounded-xl flex-shrink-0 bg-red-500/90 hover:bg-red-500 text-white transition-all duration-200 shadow-lg"
+                        className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex-shrink-0 bg-red-500/90 hover:bg-red-500 text-white transition-all duration-200 shadow-lg touch-manipulation"
                         onClick={onStopGeneration}
                       >
-                        <StopCircle className="h-5 w-5" />
+                        <StopCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="bg-gray-800 border-gray-700">Stop generation</TooltipContent>
@@ -280,7 +280,7 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
                         <Button
                           size="icon"
                           variant="ghost"
-                          className={`h-10 w-10 rounded-xl flex-shrink-0 transition-all duration-200 ${
+                          className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex-shrink-0 transition-all duration-200 touch-manipulation ${
                             isRecording
                               ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 animate-pulse'
                               : 'hover:bg-gray-700/50 text-gray-400 hover:text-white'
@@ -288,7 +288,7 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
                           onClick={toggleRecording}
                           disabled={disabled}
                         >
-                          <Mic className="h-5 w-5" />
+                          <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="bg-gray-800 border-gray-700">
@@ -303,7 +303,7 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
                       <TooltipTrigger asChild>
                         <Button
                           size="icon"
-                          className={`h-10 w-10 rounded-xl flex-shrink-0 transition-all duration-200 shadow-lg ${
+                          className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex-shrink-0 transition-all duration-200 shadow-lg touch-manipulation ${
                             input.trim() || attachments.length > 0
                               ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white scale-105'
                               : 'bg-gray-700 text-gray-400 hover:bg-gray-600 cursor-not-allowed'
@@ -311,7 +311,7 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
                           onClick={handleSend}
                           disabled={disabled || (!input.trim() && attachments.length === 0)}
                         >
-                          <Send className="h-5 w-5" />
+                          <Send className="h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="bg-gray-800 border-gray-700">
@@ -343,15 +343,15 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>((
           )}
         </AnimatePresence>
 
-        <div className="mt-4 flex items-center justify-center">
-          <div className="flex items-center gap-2 rounded-2xl bg-gray-900/50 border border-gray-800 p-1.5 backdrop-blur-sm">
+        <div className="mt-3 sm:mt-4 flex items-center justify-center">
+          <div className="flex items-center gap-1 sm:gap-2 rounded-2xl bg-gray-900/50 border border-gray-800 p-1 sm:p-1.5 backdrop-blur-sm">
             {modes.map((mode) => (
               <TooltipProvider key={mode.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <motion.button
                       onClick={() => onModeChange?.(mode.id as any)}
-                      className={`px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium transition-all duration-200 ${
+                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation ${
                         aiMode === mode.id
                           ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-400 border border-blue-500/30"
                           : "text-gray-400 hover:bg-gray-700/50 hover:text-white"

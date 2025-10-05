@@ -210,23 +210,25 @@ const Sidebar = ({
         animate={{ width: isExpanded ? 320 : 60 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "bg-black/95 backdrop-blur-sm border-r border-gray-800 flex flex-col transition-all duration-300 overflow-hidden h-full"
+          "bg-black/95 backdrop-blur-sm border-r border-gray-800 flex flex-col transition-all duration-300 overflow-hidden h-full",
+          "lg:relative lg:translate-x-0",
+          isExpanded ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900/20">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-800 bg-gray-900/20">
           {isExpanded ? (
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-2 ring-blue-500/20">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg ring-2 ring-blue-500/20">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <span className="font-bold text-xl text-white tracking-tight block">
-                  Grok
+                <span className="font-bold text-lg sm:text-xl text-white tracking-tight block">
+                  AJ STUDIOZ
                 </span>
                 <span className="text-xs text-blue-400 font-medium bg-blue-500/10 px-2 py-0.5 rounded-full">
                   AI Assistant
@@ -235,8 +237,8 @@ const Sidebar = ({
             </motion.div>
           ) : (
             <div className="flex items-center justify-center w-full">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
           )}
@@ -244,23 +246,23 @@ const Sidebar = ({
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="h-8 w-8 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
+            className="h-8 w-8 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200 touch-manipulation"
           >
             {isExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
 
         {/* New Chat Button */}
-        <div className="p-4">
+        <div className="p-3 sm:p-4">
           <Button
             onClick={handleCreateNewChat}
             className={cn(
-              "w-full justify-start gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold border-0 shadow-lg h-11 rounded-xl transition-all duration-200",
+              "w-full justify-start gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold border-0 shadow-lg h-10 sm:h-11 rounded-xl transition-all duration-200 touch-manipulation",
               !isExpanded && "px-2 justify-center"
             )}
           >
-            <Plus className="h-5 w-5" />
-            {isExpanded && <span>New Conversation</span>}
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+            {isExpanded && <span className="text-sm sm:text-base">New Conversation</span>}
           </Button>
         </div>
 
@@ -271,24 +273,24 @@ const Sidebar = ({
             transition={{ delay: 0.2, duration: 0.3 }}
           >
             {/* Search */}
-            <div className="px-4 pb-4">
+            <div className="px-3 sm:px-4 pb-3 sm:pb-4">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search conversations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-11 pr-4 bg-gray-900/50 border-gray-700 h-10 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 rounded-xl backdrop-blur-sm transition-all duration-200"
+                  className="pl-10 sm:pl-11 pr-3 sm:pr-4 bg-gray-900/50 border-gray-700 h-9 sm:h-10 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 rounded-xl backdrop-blur-sm transition-all duration-200 text-sm sm:text-base"
                 />
               </div>
             </div>
 
             {/* Categories */}
             {categories.length > 0 && (
-              <div className="px-4 pb-4">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Categories</h3>
+              <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 sm:mb-3">Categories</h3>
                 <motion.div 
-                  className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+                  className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.3 }}
@@ -296,7 +298,7 @@ const Sidebar = ({
                   <button
                     onClick={() => setActiveCategory(null)}
                     className={cn(
-                      "px-3 py-2 text-sm rounded-xl whitespace-nowrap transition-all duration-200 font-medium",
+                      "px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-xl whitespace-nowrap transition-all duration-200 font-medium touch-manipulation",
                       activeCategory === null
                         ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                         : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
@@ -309,7 +311,7 @@ const Sidebar = ({
                       key={category}
                       onClick={() => setActiveCategory(category)}
                       className={cn(
-                        "px-3 py-2 text-sm rounded-xl whitespace-nowrap transition-all duration-200 font-medium",
+                        "px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-xl whitespace-nowrap transition-all duration-200 font-medium touch-manipulation",
                         activeCategory === category
                           ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
                           : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
@@ -323,25 +325,25 @@ const Sidebar = ({
             )}
 
             {/* Archive Toggle */}
-            <div className="px-4 pb-4">
+            <div className="px-3 sm:px-4 pb-3 sm:pb-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
                 className={cn(
-                  "w-full justify-start gap-3 text-sm h-10 rounded-xl transition-all duration-200",
+                  "w-full justify-start gap-2 sm:gap-3 text-xs sm:text-sm h-9 sm:h-10 rounded-xl transition-all duration-200 touch-manipulation",
                   showArchived
                     ? "bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20"
                     : "text-gray-400 hover:text-white hover:bg-gray-700/50"
                 )}
               >
-                <Archive className="h-4 w-4" />
+                <Archive className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span>{showArchived ? "Hide Archived" : "Show Archived"}</span>
               </Button>
             </div>
 
             {/* Chat List */}
-            <div className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-4 pb-3 sm:pb-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
               <DragDropContext onDragEnd={onDragEnd}>
                 {Object.entries(groupedChats).map(([groupName, chats]) => (
                   <div key={groupName} className="mb-6">
@@ -358,7 +360,7 @@ const Sidebar = ({
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           className={cn(
-                            "group relative rounded-xl transition-all duration-200 border backdrop-blur-sm",
+                            "group relative rounded-xl transition-all duration-200 border backdrop-blur-sm touch-manipulation",
                             currentChatId === chat.id
                               ? "bg-blue-500/10 border-blue-500/30 shadow-lg shadow-blue-500/10"
                               : "bg-gray-900/30 border-gray-800 hover:bg-gray-800/50 hover:border-gray-700",
@@ -406,15 +408,15 @@ const Sidebar = ({
                             </div>
                           ) : (
                             <div
-                              className="flex items-center gap-3 p-3 cursor-pointer"
+                              className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 cursor-pointer"
                               onClick={() => onSelectChat && onSelectChat(chat.id)}
                             >
                               {/* Drag Handle */}
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <div {...provided.dragHandleProps} className="text-gray-500 hover:text-gray-300 transition-colors">
-                                      <GripVertical className="h-4 w-4" />
+                                    <div {...provided.dragHandleProps} className="text-gray-500 hover:text-gray-300 transition-colors touch-manipulation">
+                                      <GripVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent className="bg-gray-800 border-gray-700">Drag to reorder</TooltipContent>
@@ -423,20 +425,20 @@ const Sidebar = ({
                               
                               {/* Chat Content */}
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
+                                <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
                                   {chat.isPinned && (
                                     <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
                                   )}
                                   {chat.isArchived && (
                                     <Archive className="h-3 w-3 text-gray-500" />
                                   )}
-                                  <div className={`font-semibold text-sm truncate ${
+                                  <div className={`font-semibold text-xs sm:text-sm truncate ${
                                     currentChatId === chat.id ? 'text-blue-300' : 'text-gray-200'
                                   }`}>
                                     {chat.title}
                                   </div>
                                 </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-1.5">
+                                <div className="text-xs text-gray-500 flex items-center gap-1 sm:gap-1.5 flex-wrap">
                                   <Clock className="h-3 w-3" />
                                   <span>{chat.date}</span>
                                   <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
@@ -454,7 +456,7 @@ const Sidebar = ({
                               {/* Action Buttons */}
                               {(hoveredChatId === chat.id || currentChatId === chat.id) && (
                                 <motion.div 
-                                  className="flex items-center gap-1 bg-gray-800/80 backdrop-blur-sm rounded-lg p-1 border border-gray-700"
+                                  className="flex items-center gap-0.5 sm:gap-1 bg-gray-800/80 backdrop-blur-sm rounded-lg p-0.5 sm:p-1 border border-gray-700"
                                   initial={{ opacity: 0, scale: 0.9, x: 10 }}
                                   animate={{ opacity: 1, scale: 1, x: 0 }}
                                   transition={{ duration: 0.15 }}
@@ -465,7 +467,7 @@ const Sidebar = ({
                                         <Button
                                           size="icon"
                                           variant="ghost"
-                                          className={`h-7 w-7 rounded-md transition-all duration-200 ${
+                                          className={`h-6 w-6 sm:h-7 sm:w-7 rounded-md transition-all duration-200 touch-manipulation ${
                                             chat.isPinned 
                                               ? "text-yellow-400 bg-yellow-500/20 hover:bg-yellow-500/30" 
                                               : "text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/20"
@@ -475,7 +477,7 @@ const Sidebar = ({
                                             handleTogglePin(chat.id, !chat.isPinned);
                                           }}
                                         >
-                                          <Star className={cn("h-3.5 w-3.5", chat.isPinned && "fill-current")} />
+                                          <Star className={cn("h-3 w-3 sm:h-3.5 sm:w-3.5", chat.isPinned && "fill-current")} />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent className="bg-gray-800 border-gray-700">
@@ -490,13 +492,13 @@ const Sidebar = ({
                                         <Button
                                           size="icon"
                                           variant="ghost"
-                                          className="h-7 w-7 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 rounded-md transition-all duration-200"
+                                          className="h-6 w-6 sm:h-7 sm:w-7 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 rounded-md transition-all duration-200 touch-manipulation"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleEditChat(chat);
                                           }}
                                         >
-                                          <Edit className="h-3.5 w-3.5" />
+                                          <Edit className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent className="bg-gray-800 border-gray-700">Rename chat</TooltipContent>
@@ -509,7 +511,7 @@ const Sidebar = ({
                                         <Button
                                           size="icon"
                                           variant="ghost"
-                                          className={`h-7 w-7 rounded-md transition-all duration-200 ${
+                                          className={`h-6 w-6 sm:h-7 sm:w-7 rounded-md transition-all duration-200 touch-manipulation ${
                                             chat.isArchived 
                                               ? "text-orange-400 bg-orange-500/20 hover:bg-orange-500/30" 
                                               : "text-gray-400 hover:text-orange-400 hover:bg-orange-500/20"
@@ -519,7 +521,7 @@ const Sidebar = ({
                                             handleToggleArchive(chat.id, !chat.isArchived);
                                           }}
                                         >
-                                          <Archive className="h-3.5 w-3.5" />
+                                          <Archive className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent className="bg-gray-800 border-gray-700">
@@ -534,13 +536,13 @@ const Sidebar = ({
                                         <Button
                                           size="icon"
                                           variant="ghost"
-                                          className="h-7 w-7 text-gray-400 hover:text-red-400 hover:bg-red-500/20 rounded-md transition-all duration-200"
+                                          className="h-6 w-6 sm:h-7 sm:w-7 text-gray-400 hover:text-red-400 hover:bg-red-500/20 rounded-md transition-all duration-200 touch-manipulation"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleDeleteChat(chat.id);
                                           }}
                                         >
-                                          <Trash2 className="h-3.5 w-3.5" />
+                                          <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                                         </Button>
                                       </TooltipTrigger>
                                       <TooltipContent className="bg-gray-800 border-gray-700">Delete chat</TooltipContent>
@@ -572,24 +574,24 @@ const Sidebar = ({
         )}
 
         {/* Footer */}
-        <div className="mt-auto p-4 border-t border-gray-800 bg-gray-900/20">
+        <div className="mt-auto p-3 sm:p-4 border-t border-gray-800 bg-gray-900/20">
           {isExpanded ? (
             <motion.div 
-              className="space-y-2"
+              className="space-y-1.5 sm:space-y-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
               <Button 
                 variant="ghost" 
-                className="w-full justify-start gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-10 rounded-xl transition-all duration-200"
+                className="w-full justify-start gap-2 sm:gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-9 sm:h-10 rounded-xl transition-all duration-200 touch-manipulation"
               >
-                <FolderOpen className="h-4 w-4" />
-                <span>Chat Archive</span>
+                <FolderOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="text-sm sm:text-base">Chat Archive</span>
               </Button>
               <Button 
                 variant="ghost" 
-                className="w-full justify-start gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-10 rounded-xl transition-all duration-200"
+                className="w-full justify-start gap-2 sm:gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-9 sm:h-10 rounded-xl transition-all duration-200 touch-manipulation"
                 onClick={() => {
                   if (onOpenSettings) {
                     onOpenSettings();
@@ -598,28 +600,28 @@ const Sidebar = ({
                   }
                 }}
               >
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
+                <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="text-sm sm:text-base">Settings</span>
               </Button>
               <Button 
                 variant="ghost" 
-                className="w-full justify-start gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-10 rounded-xl transition-all duration-200"
+                className="w-full justify-start gap-2 sm:gap-3 text-gray-400 hover:bg-gray-700/50 hover:text-white h-9 sm:h-10 rounded-xl transition-all duration-200 touch-manipulation"
               >
-                <HelpCircle className="h-4 w-4" />
-                <span>Help & Support</span>
+                <HelpCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="text-sm sm:text-base">Help & Support</span>
               </Button>
             </motion.div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5 sm:gap-2">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-10 w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200"
+                      className="h-9 w-9 sm:h-10 sm:w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200 touch-manipulation"
                     >
-                      <FolderOpen className="h-5 w-5" />
+                      <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-gray-800 border-gray-700">Chat Archive</TooltipContent>
@@ -632,7 +634,7 @@ const Sidebar = ({
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-10 w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200"
+                      className="h-9 w-9 sm:h-10 sm:w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200 touch-manipulation"
                       onClick={() => {
                         if (onOpenSettings) {
                           onOpenSettings();
@@ -641,7 +643,7 @@ const Sidebar = ({
                         }
                       }}
                     >
-                      <Settings className="h-5 w-5" />
+                      <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-gray-800 border-gray-700">Settings</TooltipContent>
@@ -654,9 +656,9 @@ const Sidebar = ({
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-10 w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200"
+                      className="h-9 w-9 sm:h-10 sm:w-10 text-gray-400 hover:bg-gray-700/50 hover:text-white rounded-xl transition-all duration-200 touch-manipulation"
                     >
-                      <HelpCircle className="h-5 w-5" />
+                      <HelpCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-gray-800 border-gray-700">Help & Support</TooltipContent>

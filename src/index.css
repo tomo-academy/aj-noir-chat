@@ -234,6 +234,36 @@
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
+  /* Mobile Performance Optimizations */
+  @media (max-width: 768px) {
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-slide-down,
+    .animate-scale-in {
+      animation-duration: 0.2s;
+    }
+    
+    .animate-glow {
+      animation-duration: 1s;
+    }
+    
+    .animate-pulse-slow {
+      animation-duration: 2s;
+    }
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-slide-down,
+    .animate-scale-in,
+    .animate-glow,
+    .animate-pulse-slow {
+      animation: none;
+    }
+  }
+
   /* Code Block Utilities */
   .code-block {
     @apply rounded-xl bg-[hsl(var(--code-bg))] border border-[hsl(var(--code-border))] p-4 overflow-x-auto font-mono text-sm shadow-inner;
@@ -269,6 +299,39 @@
     @apply scale-[0.98];
   }
 
+  /* Mobile Touch Optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+
+  /* Mobile Performance Classes */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .will-change-scroll {
+    will-change: scroll-position;
+  }
+
+  /* Hardware Acceleration */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
   /* Focus States */
   .focus-visible {
     @apply outline-none ring-2 ring-[hsl(var(--ring))] ring-offset-2 ring-offset-[hsl(var(--background))];
@@ -295,6 +358,27 @@
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--border-strong));
+  }
+
+  /* Mobile Scrollbar Optimizations */
+  @media (max-width: 768px) {
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: hsl(var(--border) / 0.5);
+    }
+  }
+
+  /* Hide scrollbars on mobile for cleaner look */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Keyframes */

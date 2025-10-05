@@ -242,7 +242,7 @@ const ChatMessage = memo(({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`w-full py-6 px-4 relative group transition-all duration-200 ${
+      className={`w-full py-4 sm:py-6 px-3 sm:px-4 relative group transition-all duration-200 ${
         isUser 
           ? 'hover:bg-background-alt/30' 
           : 'bg-background-alt/50 border-b border-border/30 hover:bg-background-alt/70'
@@ -251,24 +251,24 @@ const ChatMessage = memo(({
       onMouseLeave={() => setShowActions(false)}
     >
       <div className="max-w-4xl mx-auto">
-        <div className="flex gap-6">
+        <div className="flex gap-4 sm:gap-6">
           <div className="flex-shrink-0">
             {isUser ? (
               <motion.div 
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-foreground/10 to-foreground/20 border border-border-strong/50 flex items-center justify-center shadow-lg backdrop-blur-sm"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-foreground/10 to-foreground/20 border border-border-strong/50 flex items-center justify-center shadow-lg backdrop-blur-sm"
               >
-                <User className="w-5 h-5 text-foreground-dim" />
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-foreground-dim" />
               </motion.div>
             ) : (
               <motion.div 
                 whileHover={{ scale: 1.05, rotate: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary/95 to-foreground border border-border-strong/30 flex items-center justify-center shadow-xl backdrop-blur-sm relative overflow-hidden"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-primary/95 to-foreground border border-border-strong/30 flex items-center justify-center shadow-xl backdrop-blur-sm relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-foreground/5 to-foreground/10" />
-                <Zap className="w-5 h-5 text-background relative z-10" />
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-background relative z-10" />
               </motion.div>
             )}
           </div>
@@ -276,24 +276,24 @@ const ChatMessage = memo(({
           <div className="flex-1 min-w-0">
             <div className="relative">
               {/* Username/Role label */}
-              <div className="mb-3 flex items-center gap-2">
-                <span className={`text-sm font-bold tracking-wide ${
+              <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                <span className={`text-xs sm:text-sm font-bold tracking-wide ${
                   isUser ? 'text-foreground-dim' : 'text-primary'
                 }`}>
                   {isUser ? 'You' : 'AJ STUDIOZ'}
                 </span>
                 {!isUser && (
-                  <span className="text-2xs text-foreground-muted bg-accent/30 border border-border/50 px-2 py-1 rounded-lg font-medium uppercase tracking-wider">
+                  <span className="text-2xs text-foreground-muted bg-accent/30 border border-border/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg font-medium uppercase tracking-wider">
                     AI Assistant
                   </span>
                 )}
-                <div className={`w-2 h-2 rounded-full ${
+                <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                   isUser ? 'bg-foreground-muted/50' : 'bg-success/80 animate-pulse-slow'
                 }`} />
               </div>
 
               {/* Message content */}
-              <div className={`text-[15px] prose prose-sm dark:prose-invert max-w-none leading-relaxed font-medium ${
+              <div className={`text-sm sm:text-[15px] prose prose-sm dark:prose-invert max-w-none leading-relaxed font-medium ${
                 isUser ? 'text-foreground-dim' : 'text-foreground'
               }`}>
                 <ReactMarkdown
@@ -313,23 +313,23 @@ const ChatMessage = memo(({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="flex items-center gap-1 mt-4"
+                    className="flex items-center gap-1 mt-3 sm:mt-4"
                   >
                     {/* Primary actions */}
-                    <div className="flex items-center gap-1 bg-gray-800/50 backdrop-blur-sm rounded-xl p-1 border border-gray-700">
+                    <div className="flex items-center gap-0.5 sm:gap-1 bg-gray-800/50 backdrop-blur-sm rounded-xl p-0.5 sm:p-1 border border-gray-700">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200"
+                              className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200 touch-manipulation"
                               onClick={handleCopy}
                             >
                               {copied ? (
-                                <Check className="h-4 w-4 text-green-400" />
+                                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-400" />
                               ) : (
-                                <Copy className="h-4 w-4" />
+                                <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               )}
                             </Button>
                           </TooltipTrigger>
@@ -341,14 +341,14 @@ const ChatMessage = memo(({
                             <Button
                               size="icon"
                               variant="ghost"
-                              className={`h-8 w-8 rounded-lg transition-all duration-200 ${
+                              className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg transition-all duration-200 touch-manipulation ${
                                 isLiked 
                                   ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
                                   : 'hover:bg-gray-700/50 text-gray-400 hover:text-red-400'
                               }`}
                               onClick={() => setIsLiked(!isLiked)}
                             >
-                              <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                              <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isLiked ? 'fill-current' : ''}`} />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="bg-gray-800 border-gray-700">
@@ -361,18 +361,18 @@ const ChatMessage = memo(({
                             <Button
                               size="icon"
                               variant="ghost"
-                              className="h-8 w-8 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-blue-400 transition-all duration-200"
+                              className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-blue-400 transition-all duration-200 touch-manipulation"
                               onClick={handleRefresh}
                               disabled={isRefreshing}
                             >
                               {isRefreshing ? (
                                 <motion.div 
-                                  className="h-4 w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent"
+                                  className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent"
                                   animate={{ rotate: 360 }}
                                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                 />
                               ) : (
-                                <RefreshCw className="h-4 w-4" />
+                                <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               )}
                             </Button>
                           </TooltipTrigger>
@@ -384,14 +384,14 @@ const ChatMessage = memo(({
                             <Button
                               size="icon"
                               variant="ghost"
-                              className={`h-8 w-8 rounded-lg transition-all duration-200 ${
+                              className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg transition-all duration-200 touch-manipulation ${
                                 isBookmarked 
                                   ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' 
                                   : 'hover:bg-gray-700/50 text-gray-400 hover:text-yellow-400'
                               }`}
                               onClick={handleBookmark}
                             >
-                              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+                              <Bookmark className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isBookmarked ? 'fill-current' : ''}`} />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="bg-gray-800 border-gray-700">
@@ -407,9 +407,9 @@ const ChatMessage = memo(({
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200 ml-1"
+                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all duration-200 ml-1 touch-manipulation"
                         >
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent 

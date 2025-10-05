@@ -19,7 +19,7 @@ export const useTheme = () => {
 };
 
 const THEME_STORAGE_KEY = 'aj-noir-chat-theme';
-const DEFAULT_THEME: ThemeVariant = 'noir';
+const DEFAULT_THEME: ThemeVariant = 'pure-noir';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
