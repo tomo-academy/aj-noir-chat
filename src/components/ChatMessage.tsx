@@ -1,4 +1,4 @@
-import { memo, useState, lazy, Suspense } from "react";
+import { memo, useState } from "react";
 import { User, Sparkles, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw, Share2, Bookmark } from "lucide-react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -8,11 +8,9 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { motion } from "framer-motion"; // Added for animations
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"; // Added for share modal
-
-// Lazy load image for better performance
-const LazyImage = lazy(() => import('./LazyImage')); // Assume a LazyImage component exists
+import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import LazyImage from './LazyImage';
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -22,8 +20,8 @@ interface ChatMessageProps {
   onRefresh?: () => void;
   onThumbsUp?: () => void;
   onThumbsDown?: () => void;
-  onShare?: (content: string) => void; // New
-  onBookmark?: () => void; // New
+  onShare?: (content: string) => void;
+  onBookmark?: () => void;
 }
 
 const ChatMessage = memo(({ 
@@ -73,7 +71,6 @@ const ChatMessage = memo(({
     if (onShare) onShare(content);
   };
 
-  // Custom components for markdown rendering with image lazy loading
   const components = {
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
@@ -163,9 +160,7 @@ const ChatMessage = memo(({
     },
     img({ src, alt }: any) {
       return (
-        <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse" />}>
-          <LazyImage src={src} alt={alt} className="max-w-full rounded-lg my-4" />
-        </Suspense>
+        <LazyImage src={src} alt={alt} className="max-w-full rounded-lg my-4" />
       );
     },
   };
@@ -179,7 +174,6 @@ const ChatMessage = memo(({
     >
       <div className="max-w-3xl mx-auto">
         <div className="flex gap-4">
-          {/* Avatar */}
           <div className="flex-shrink-0">
             {isUser ? (
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
@@ -192,7 +186,6 @@ const ChatMessage = memo(({
             )}
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start">
               <div className="text-[15px] text-foreground prose prose-sm dark:prose-invert max-w-none">
@@ -205,7 +198,6 @@ const ChatMessage = memo(({
                 </ReactMarkdown>
               </div>
               
-              {/* Message actions */}
               {!isUser && (
                 <div className="flex gap-1 ml-2">
                   <TooltipProvider>
@@ -308,7 +300,6 @@ const ChatMessage = memo(({
                         <TooltipContent side="top">Share</TooltipContent>
                       </Tooltip>
                       <DialogContent>
-                        {/* Share modal content, e.g., links, social buttons */}
                         <div>Share this message: {content.substring(0, 50)}...</div>
                         <Button onClick={handleShare}>Share Now</Button>
                       </DialogContent>
