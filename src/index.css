@@ -65,9 +65,7 @@ All colors MUST be HSL. */
     --sidebar-hover: 0 0% 7%;
     --code-bg: 0 0% 6%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
@@ -75,8 +73,9 @@ All colors MUST be HSL. */
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+}
 
-  /* Enhance typography for markdown rendering */
+@layer components {
   .prose {
     @apply text-foreground max-w-none;
   }
