@@ -5,9 +5,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL. */
-
+/* Definition of the design system. All colors MUST be HSL. */
 @layer base {
   :root {
     --background: 0 0% 7%;
@@ -75,37 +73,6 @@ All colors MUST be HSL. */
   }
 }
 
-@layer components {
-  .prose {
-    @apply text-foreground max-w-none;
-  }
-
-  .prose pre {
-    @apply code-block;
-  }
-
-  .prose code {
-    @apply bg-[hsl(var(--code-bg))] px-1.5 py-0.5 rounded text-sm font-mono;
-  }
-
-  .prose blockquote {
-    @apply border-l-4 border-border pl-4 italic text-muted-foreground;
-  }
-
-  .prose table {
-    @apply border-collapse border border-border rounded-lg;
-  }
-
-  .prose th,
-  .prose td {
-    @apply border border-border px-4 py-2;
-  }
-
-  .prose th {
-    @apply bg-muted font-medium text-left;
-  }
-}
-
 @layer utilities {
   .text-gradient {
     @apply bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent;
@@ -128,62 +95,26 @@ All colors MUST be HSL. */
   }
 
   .code-block {
-    @apply rounded-lg bg-[hsl(var(--code-bg))] p-4 overflow-x-auto;
-  }
-
-  .scrollbar-thin {
-    @apply scrollbar-w-1.5 scrollbar-thumb-rounded;
-  }
-
-  .scrollbar-thumb-gray-800 {
-    @apply scrollbar-thumb-gray-800;
-  }
-
-  .scrollbar-track-transparent {
-    @apply scrollbar-track-transparent;
+    @apply rounded-lg bg-[hsl(var(--code-bg))] p-4 overflow-x-auto font-mono text-sm;
   }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 }
